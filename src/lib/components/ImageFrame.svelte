@@ -21,17 +21,19 @@
 
 <style>
 	.image-frame {
+		--mat-width: 6px;
 		position: absolute;
 		left: 0;
 		top: 0;
+		padding: var(--mat-width);
+		border-radius: 4px;
+		background: linear-gradient(135deg, var(--colors-surface-light), var(--colors-surface));
 		will-change: translate;
-		border-radius: 3px;
-		background: white;
-		padding: 3px;
 		box-shadow:
-			0 2px 8px rgba(0, 0, 0, 0.22),
-			0 0 1px rgba(0, 0, 0, 0.15),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+			0 3px 10px rgba(0, 0, 0, 0.22),
+			0 1px 3px rgba(0, 0, 0, 0.18),
+			inset 0 1px 0 rgba(255, 255, 255, 0.6),
+			inset 1px 0 0 rgba(255, 255, 255, 0.3);
 		transition:
 			translate 0.35s ease-out,
 			width 0.35s ease-out,
@@ -41,21 +43,36 @@
 
 	.image-frame:hover {
 		box-shadow:
-			0 6px 20px rgba(0, 0, 0, 0.28),
-			0 0 1px rgba(0, 0, 0, 0.2),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+			0 8px 24px rgba(0, 0, 0, 0.28),
+			0 2px 6px rgba(0, 0, 0, 0.2),
+			inset 0 1px 0 rgba(255, 255, 255, 0.6),
+			inset 1px 0 0 rgba(255, 255, 255, 0.3);
 		z-index: 1;
+	}
+
+	.image-frame::after {
+		content: '';
+		position: absolute;
+		inset: calc(var(--mat-width) - 1px);
+		border-radius: 2px;
+		border: 1px solid transparent;
+		border-top-color: rgba(255, 255, 255, 0.45);
+		border-left-color: rgba(255, 255, 255, 0.35);
+		border-bottom-color: rgba(0, 0, 0, 0.08);
+		border-right-color: rgba(0, 0, 0, 0.06);
+		pointer-events: none;
+		z-index: 2;
 	}
 
 	.image-frame::before {
 		content: '';
 		position: absolute;
-		inset: 3px;
+		inset: var(--mat-width);
 		border-radius: 2px;
 		background: linear-gradient(
 			90deg,
 			var(--colors-parchment-mid) 25%,
-			#f5f0e8 50%,
+			var(--colors-parchment-light) 50%,
 			var(--colors-parchment-mid) 75%
 		);
 		background-size: 200% 100%;
@@ -77,6 +94,7 @@
 
 	.image-frame .image {
 		position: relative;
+		z-index: 1;
 		display: block;
 		width: 100%;
 		height: 100%;
@@ -93,6 +111,6 @@
 	}
 
 	.image-frame:hover .image {
-		filter: brightness(1.05) saturate(1.1);
+		filter: brightness(1.05) saturate(1.08);
 	}
 </style>

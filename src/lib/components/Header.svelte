@@ -21,8 +21,8 @@
 			color: 'ink',
 			m: '0',
 			letterSpacing: '-0.025em',
+			textShadow: '0 2px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(0,0,0,0.08)',
 		})}
-		style="text-shadow: 0 2px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(0,0,0,0.08)"
 	>
 		{title}
 	</h1>
@@ -34,8 +34,8 @@
 			mb: '0',
 			letterSpacing: '0.1em',
 			textTransform: 'uppercase',
+			textShadow: '0 1px 0 rgba(255,255,255,0.4)',
 		})}
-		style="text-shadow: 0 1px 0 rgba(255,255,255,0.4)"
 	>
 		{subtitle}
 	</p>
