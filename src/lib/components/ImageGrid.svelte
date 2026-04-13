@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { css } from 'styled-system/css';
 	import type { LayoutItem } from '$lib/justified-layout';
 	import { justifiedLayout } from '$lib/justified-layout';
 	import { useContainerWidth } from '$lib/composables/use-container-width.svelte';
@@ -38,7 +39,7 @@
 
 <div
 	bind:this={container.element}
-	class="relative transition-height duration-350 ease-out"
+	class={css({ position: 'relative', transition: 'height 0.35s ease-out' })}
 	style:height="{layout?.totalHeight ?? 0}px"
 >
 	{#if layout}

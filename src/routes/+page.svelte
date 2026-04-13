@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { css } from 'styled-system/css';
 	import Header from '$lib/components/Header.svelte';
 	import ControlsPanel from '$lib/components/ControlsPanel.svelte';
 	import NumberControl from '$lib/components/NumberControl.svelte';
@@ -18,7 +19,7 @@
 	let images = $derived(generateImages(imageCount));
 </script>
 
-<div class="max-w-1400px mx-auto px-8 py-6">
+<div class={css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '6' })}>
 	<Header title="Gridpack" subtitle="justified image layout demo" />
 
 	<ControlsPanel>

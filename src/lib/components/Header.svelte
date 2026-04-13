@@ -1,16 +1,40 @@
 <script lang="ts">
+	import { css } from 'styled-system/css';
+
 	let { title, subtitle }: { title: string; subtitle: string } = $props();
 </script>
 
-<header class="text-center mb-7 pb-5 border-b border-b-black/8 shadow-[0_1px_0_rgba(255,255,255,0.5)]">
+<header
+	class={css({
+		textAlign: 'center',
+		mb: '7',
+		pb: '5',
+		borderBottom: '1px solid rgba(0,0,0,0.08)',
+		boxShadow: '0 1px 0 rgba(255,255,255,0.5)',
+	})}
+>
 	<h1
-		class="font-display text-48px font-800 text-ink m-0 tracking-tight"
+		class={css({
+			fontFamily: 'display',
+			fontSize: '48px',
+			fontWeight: '800',
+			color: 'ink',
+			m: '0',
+			letterSpacing: '-0.025em',
+		})}
 		style="text-shadow: 0 2px 0 rgba(255,255,255,0.6), 0 -1px 0 rgba(0,0,0,0.08)"
 	>
 		{title}
 	</h1>
 	<p
-		class="text-13px text-ink-muted mt-1.5 mb-0 tracking-widest uppercase"
+		class={css({
+			fontSize: '13px',
+			color: 'ink.muted',
+			mt: '1.5',
+			mb: '0',
+			letterSpacing: '0.1em',
+			textTransform: 'uppercase',
+		})}
 		style="text-shadow: 0 1px 0 rgba(255,255,255,0.4)"
 	>
 		{subtitle}
