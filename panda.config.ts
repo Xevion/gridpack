@@ -124,23 +124,14 @@ const segmentGroupRecipe = defineSlotRecipe({
 			display: "inline-flex",
 			alignItems: "center",
 			position: "relative",
-			isolation: "isolate",
-			...insetGroove,
 			borderRadius: "6px",
-			padding: "3px",
-			gap: "2px",
+			overflow: "hidden",
+			border: "1px solid {colors.control.light}",
+			boxShadow:
+				"0 1px 3px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
 		},
 		indicator: {
-			position: "absolute",
-			zIndex: "0",
-			...accentFill,
-			borderRadius: "4px",
-			width: "var(--width)",
-			height: "var(--height)",
-			top: "var(--top)",
-			left: "var(--left)",
-			transition:
-				"width 0.15s ease-out, height 0.15s ease-out, left 0.15s ease-out, top 0.15s ease-out",
+			display: "none",
 		},
 		item: {
 			display: "flex",
@@ -150,21 +141,67 @@ const segmentGroupRecipe = defineSlotRecipe({
 			fontWeight: "600",
 			textTransform: "uppercase",
 			letterSpacing: "0.5px",
-			paddingInline: "10px",
-			height: "24px",
-			borderRadius: "4px",
+			paddingInline: "14px",
+			height: "28px",
 			cursor: "pointer",
 			userSelect: "none",
 			position: "relative",
+			zIndex: "1",
 			color: "ink.soft",
-			transition: "color 0.15s ease",
+			background:
+				"linear-gradient(to bottom, {colors.parchment.mid}, {colors.parchment.dark})",
+			boxShadow:
+				"inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.04), 1px 0 0 rgba(0, 0, 0, 0.18)",
+			textShadow: "0 1px 0 rgba(255, 255, 255, 0.5)",
+			transition:
+				"color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, text-shadow 0.25s ease",
+			_last: {
+				boxShadow:
+					"inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.04)",
+			},
+			_hover: {
+				color: "ink.mid",
+				background:
+					"linear-gradient(to bottom, {colors.parchment.mid}, {colors.parchment.warm})",
+				boxShadow:
+					"inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.03), 1px 0 0 rgba(0, 0, 0, 0.18)",
+			},
+			_active: {
+				background:
+					"linear-gradient(to bottom, {colors.parchment.dark}, {colors.parchment.warm})",
+				boxShadow:
+					"inset 0 1px 3px rgba(0, 0, 0, 0.12), 1px 0 0 rgba(0, 0, 0, 0.18)",
+				transition: "none",
+			},
 			_checked: {
 				color: "white",
-				textShadow: "0 1px 1px rgba(0, 0, 0, 0.3)",
+				background:
+					"linear-gradient(to bottom, {colors.accent.light}, {colors.accent})",
+				boxShadow:
+					"inset 0 0 0 1px rgba(40, 80, 120, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.12), 1px 0 0 rgba(0, 0, 0, 0.18)",
+				textShadow: "0 1px 1px rgba(0, 0, 0, 0.4)",
+				_last: {
+					boxShadow:
+						"inset 0 0 0 1px rgba(40, 80, 120, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.12)",
+				},
+				_hover: {
+					color: "white",
+					background:
+						"linear-gradient(to bottom, {colors.accent.light}, {colors.accent})",
+					boxShadow:
+						"inset 0 0 0 1px rgba(40, 80, 120, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.1), 1px 0 0 rgba(0, 0, 0, 0.18)",
+				},
+				_active: {
+					color: "white",
+					background:
+						"linear-gradient(to bottom, {colors.accent}, {colors.accent.light})",
+					boxShadow:
+						"inset 0 0 0 1px rgba(40, 80, 120, 0.4), inset 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.15), 1px 0 0 rgba(0, 0, 0, 0.18)",
+				},
 			},
 			_focusVisible: {
 				outline: "2px solid {colors.accent.focus}",
-				outlineOffset: "1px",
+				outlineOffset: "-2px",
 			},
 		},
 		itemText: {
@@ -184,8 +221,11 @@ const selectControlRecipe = defineSlotRecipe({
 		"root",
 		"label",
 		"trigger",
+		"arrow",
+		"caret",
 		"content",
 		"item",
+		"itemIcon",
 		"itemText",
 		"itemIndicator",
 	],
@@ -202,54 +242,112 @@ const selectControlRecipe = defineSlotRecipe({
 			display: "flex",
 			alignItems: "center",
 			justifyContent: "space-between",
-			gap: "4px",
+			gap: "6px",
 			width: "100%",
-			paddingInline: "8px",
+			paddingLeft: "10px",
+			paddingRight: "8px",
 			fontSize: "11px",
 			fontFamily: "sans",
 			fontWeight: "600",
-			color: "ink.mid",
+			color: "ink",
 			cursor: "pointer",
-			...insetField,
+			background:
+				"linear-gradient(to bottom, {colors.surface.light}, {colors.parchment.dark})",
 			borderRadius: "4px",
-			border: "1px solid {colors.control}",
-			transition: "background 0.2s ease, box-shadow 0.2s ease",
-			_focus: {
+			boxShadow:
+				"0 2px 5px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.1)",
+			textShadow: "0 1px 0 rgba(255, 255, 255, 0.7)",
+			transition:
+				"background 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease",
+			_hover: {
+				background:
+					"linear-gradient(to bottom, {colors.surface.light}, {colors.parchment.warm})",
 				boxShadow:
-					"inset 1px 0 0 rgba(0, 0, 0, 0.12), inset -1px 0 0 rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.18), inset 0 0 0 1px {colors.accent.ring}",
+					"0 3px 7px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.08)",
 			},
+			_active: {
+				background:
+					"linear-gradient(to bottom, {colors.parchment.dark}, {colors.surface.light})",
+				boxShadow:
+					"0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 2px rgba(0, 0, 0, 0.08)",
+				transform: "translateY(1px)",
+				transition: "none",
+			},
+			_open: {
+				background:
+					"linear-gradient(to bottom, {colors.parchment.dark}, {colors.surface.light})",
+				boxShadow:
+					"0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 2px rgba(0, 0, 0, 0.08)",
+			},
+			_focusVisible: {
+				boxShadow:
+					"0 2px 5px rgba(0, 0, 0, 0.18), 0 0 6px {colors.accent.focus}, 0 0 0 2px {colors.accent}, inset 0 1px 0 rgba(255, 255, 255, 1)",
+			},
+		},
+		arrow: {
+			width: "10px",
+			height: "10px",
+			flexShrink: "0",
+			color: "ink.muted",
+			transition: "transform 0.2s ease, color 0.15s ease",
+		},
+		caret: {
+			position: "absolute",
+			top: "-6px",
+			right: "10px",
+			pointerEvents: "none",
+			zIndex: "51",
+			lineHeight: "0",
+			color: "surface.light",
 		},
 		content: {
 			background:
-				"linear-gradient(135deg, {colors.parchment.warm}, {colors.parchment.dark})",
-			border: "1px solid {colors.control}",
-			borderRadius: "6px",
-			padding: "4px",
-			boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15)",
+				"linear-gradient(135deg, {colors.surface.light}, {colors.parchment.warm})",
+			borderRadius: "4px",
+			overflow: "hidden",
+			boxShadow:
+				"0 8px 24px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(0, 0, 0, 0.04)",
 			zIndex: "50",
-			maxHeight: "200px",
-			overflowY: "auto",
 			outline: "none",
+			transformOrigin: "top",
 		},
 		item: {
 			display: "flex",
 			alignItems: "center",
-			justifyContent: "space-between",
-			gap: "4px",
-			padding: "4px 8px",
+			gap: "6px",
+			padding: "5px 10px",
 			fontSize: "11px",
 			fontWeight: "600",
 			color: "ink.mid",
-			borderRadius: "3px",
 			cursor: "pointer",
 			userSelect: "none",
-			transition: "background 0.1s ease",
+			textShadow: "0 1px 0 rgba(255, 255, 255, 0.4)",
+			borderBottom: "1px solid rgba(0, 0, 0, 0.07)",
+			boxShadow: "0 1px 0 rgba(255, 255, 255, 0.5)",
+			transition:
+				"background 0.1s ease, color 0.1s ease, box-shadow 0.1s ease",
+			_last: {
+				borderBottom: "none",
+				boxShadow: "none",
+			},
 			_highlighted: {
-				background: "rgba(0, 0, 0, 0.06)",
+				background: "rgba(0, 0, 0, 0.05)",
+				color: "ink",
 			},
 			_checked: {
 				color: "accent",
+				fontWeight: "700",
 			},
+		},
+		itemIcon: {
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			width: "14px",
+			height: "14px",
+			flexShrink: "0",
+			color: "currentColor",
+			opacity: "0.55",
 		},
 		itemText: {
 			flex: "1",
@@ -261,9 +359,8 @@ const selectControlRecipe = defineSlotRecipe({
 			display: "flex",
 			alignItems: "center",
 			justifyContent: "center",
-			color: "accent",
 			flexShrink: "0",
-			fontSize: "12px",
+			color: "accent",
 		},
 	},
 });
