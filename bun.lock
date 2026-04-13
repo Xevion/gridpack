@@ -13,6 +13,7 @@
         "@sveltejs/adapter-auto": "^7.0.1",
         "@sveltejs/kit": "^2.57.0",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "@unocss/extractor-svelte": "^66.6.8",
         "svelte": "^5.55.2",
         "svelte-check": "^4.4.6",
         "typescript": "^6.0.2",
@@ -167,6 +168,8 @@
     "@unocss/core": ["@unocss/core@66.6.8", "", {}, "sha512-P9IlQfgms+8/nka7fBhiiWU4SPwrTNKbTdK0z1SLnttXMHHjsB2zpG+Vi1JQDpICfY9Y1/2pWtguPE+zeOVu9Q=="],
 
     "@unocss/extractor-arbitrary-variants": ["@unocss/extractor-arbitrary-variants@66.6.8", "", { "dependencies": { "@unocss/core": "66.6.8" } }, "sha512-cOXstpPTOLt/HYcL0OsqFkNau0e8ktZ5Q8fgnXBZjmLGmi+VzdESNlwxZyCXLuamZGnbrZ8lDsKdsGG7P1pMKQ=="],
+
+    "@unocss/extractor-svelte": ["@unocss/extractor-svelte@66.6.8", "", {}, "sha512-wd18VGnhtj+UXsVJ6gMGb3QN2/lgoZsHZ7kQO/nDcCBKJdVMygzz4a0Di30qJDSx5VuOqMVNFv9bO/ERBjxdQw=="],
 
     "@unocss/inspector": ["@unocss/inspector@66.6.8", "", { "dependencies": { "@unocss/core": "66.6.8", "@unocss/rule-utils": "66.6.8", "colorette": "^2.0.20", "gzip-size": "^6.0.0", "sirv": "^3.0.2" } }, "sha512-g8uRzXDdmoNRjXX/mZP7m0rWXLtOimyOW7+VFK6FNxRWBmvIGYgTLHkutF6Wyh9lLPDYx3pkkEmfgL35BDT3Sg=="],
 
