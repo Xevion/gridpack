@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
 	import type { LayoutItem } from '$lib/justified-layout';
 	import { justifiedLayout } from '$lib/justified-layout';
 	import { useContainerWidth } from '$lib/composables/use-container-width.svelte';
@@ -44,9 +43,7 @@
 >
 	{#if layout}
 		{#each layout.items as item (item.id)}
-			<div out:fade={{ duration: 300 }}>
-				<ImageFrame {item} onError={handleImageError} />
-			</div>
+			<ImageFrame {item} onError={handleImageError} />
 		{/each}
 	{/if}
 </div>

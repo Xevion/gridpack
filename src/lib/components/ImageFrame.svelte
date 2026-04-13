@@ -7,14 +7,14 @@
 
 <div
 	class="image-frame rounded-[3px] bg-white p-[3px]"
-	style="left:{item.x}px;top:{item.y}px;width:{item.width}px;height:{item.height}px"
+	style="translate:{item.x}px {item.y}px;width:{item.width}px;height:{item.height}px"
 >
 	<img
 		src={imageUrl(item.id, item.width, item.height)}
 		alt="Photo {item.id}"
 		loading="lazy"
 		class="image"
-		onload={(e) => (e.currentTarget as HTMLImageElement).classList.add('loaded')}
+		onload={(e) => e.currentTarget.parentElement!.classList.add('loaded')}
 		onerror={() => onError?.(item.id)}
 	/>
 </div>

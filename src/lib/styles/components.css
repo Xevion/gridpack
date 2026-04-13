@@ -178,17 +178,18 @@
 /* Image frame */
 .image-frame {
 	position: absolute;
+	left: 0;
+	top: 0;
+	will-change: translate;
 	box-shadow:
 		0 2px 8px rgba(0, 0, 0, 0.22),
 		0 0 1px rgba(0, 0, 0, 0.15),
 		inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 	transition:
-		left 0.35s ease-out,
-		top 0.35s ease-out,
+		translate 0.35s ease-out,
 		width 0.35s ease-out,
 		height 0.35s ease-out,
-		box-shadow 0.25s ease,
-		transform 0.25s ease;
+		box-shadow 0.25s ease;
 }
 
 .image-frame:hover {
@@ -196,7 +197,6 @@
 		0 6px 20px rgba(0, 0, 0, 0.28),
 		0 0 1px rgba(0, 0, 0, 0.2),
 		inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-	transform: translateY(-2px);
 	z-index: 1;
 }
 
@@ -215,6 +215,10 @@
 	animation: shimmer 1.8s ease-in-out infinite;
 }
 
+.image-frame.loaded::before {
+	animation: none;
+}
+
 @keyframes shimmer {
 	0% {
 		background-position: 200% 0;
@@ -231,14 +235,14 @@
 	height: 100%;
 	object-fit: cover;
 	border-radius: 2px;
-	opacity: 0;
+	opacity: 1;
 	transition:
 		filter 0.3s ease,
 		opacity 0.4s ease;
-}
 
-.image-frame .image.loaded {
-	opacity: 1;
+	@starting-style {
+		opacity: 0;
+	}
 }
 
 .image-frame:hover .image {
