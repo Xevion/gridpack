@@ -5,12 +5,12 @@ body {
 	text-rendering: optimizeLegibility;
 	background:
 		url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='6' height='6' fill='%23e8e0d4'/%3E%3Crect width='1' height='1' x='0' y='0' fill='%23ddd6c8' fill-opacity='0.4'/%3E%3Crect width='1' height='1' x='3' y='3' fill='%23ddd6c8' fill-opacity='0.3'/%3E%3C/svg%3E"),
-		#e8e0d4;
+		var(--color-parchment);
 }
 
 ::selection {
-	background: #c4a97d;
-	color: #2e2519;
+	background: var(--color-control-selection);
+	color: var(--color-ink);
 }
 
 ::-webkit-scrollbar {
@@ -19,12 +19,12 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-	background: #ddd6c8;
+	background: var(--color-parchment-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #b5a994;
-	border: 2px solid #ddd6c8;
+	background: var(--color-control-light);
+	border: 2px solid var(--color-parchment-dark);
 	border-radius: 5px;
 }
 
@@ -33,14 +33,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:active {
-	background: #8a7e6e;
+	background: var(--color-ink-muted);
 }
 
 ::-webkit-scrollbar-corner {
-	background: #ddd6c8;
+	background: var(--color-parchment-dark);
 }
 
 * {
 	scrollbar-width: thin;
-	scrollbar-color: #b5a994 #ddd6c8;
+	scrollbar-color: var(--color-control-light) var(--color-parchment-dark);
 }
