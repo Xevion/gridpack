@@ -1,28 +1,30 @@
 <script lang="ts">
-	import { slider } from 'styled-system/recipes';
-	import { Slider } from '@ark-ui/svelte/slider';
+import { slider } from "styled-system/recipes";
+import { Slider } from "@ark-ui/svelte/slider";
 
-	let {
-		label,
-		value = $bindable(),
-		min,
-		max,
-		step,
-		wide = false
-	}: {
-		label: string;
-		value: number[];
-		min: number;
-		max: number;
-		step: number;
-		wide?: boolean;
-	} = $props();
+let {
+	label,
+	value = $bindable(),
+	min,
+	max,
+	step,
+	wide = false,
+	onValueChange,
+}: {
+	label: string;
+	value: number[];
+	min: number;
+	max: number;
+	step: number;
+	wide?: boolean;
+	onValueChange?: (detail: { value: number[] }) => void;
+} = $props();
 
-	let classes = $derived(slider({ wide }));
+let classes = $derived(slider({ wide }));
 </script>
 
 <div class={classes.root}>
-	<Slider.Root bind:value {min} {max} {step}>
+	<Slider.Root bind:value {min} {max} {step} {onValueChange}>
 		<div class={classes.header}>
 			<Slider.Label class={classes.label}>{label}</Slider.Label>
 			<Slider.ValueText class={classes.valueText} />

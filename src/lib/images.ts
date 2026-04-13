@@ -1,4 +1,4 @@
-import type { LayoutItem } from './justified-layout';
+import type { LayoutItem } from "./engines/types";
 
 /** 5 aspect ratio buckets */
 const ASPECT_BUCKETS = [0.667, 0.8, 1.0, 1.333, 1.778] as const;
@@ -15,7 +15,7 @@ export function generateImages(count: number): LayoutItem[] {
 		const bucketIndex = Math.floor(seededRandom(i + 1) * ASPECT_BUCKETS.length);
 		return {
 			id: i + 10, // picsum IDs starting at 10 to avoid missing images
-			aspectRatio: ASPECT_BUCKETS[bucketIndex]
+			aspectRatio: ASPECT_BUCKETS[bucketIndex],
 		};
 	});
 }

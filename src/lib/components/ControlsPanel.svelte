@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { css } from 'styled-system/css';
-	import type { Snippet } from 'svelte';
+import { css } from "styled-system/css";
+import type { Snippet } from "svelte";
 
-	let { children }: { children: Snippet } = $props();
+let { children }: { children: Snippet } = $props();
 </script>
 
 <div class={css({

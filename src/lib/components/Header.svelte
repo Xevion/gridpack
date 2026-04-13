@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { css } from 'styled-system/css';
+import { css } from "styled-system/css";
 
-	let { title, subtitle }: { title: string; subtitle: string } = $props();
+let { title, subtitle }: { title: string; subtitle: string } = $props();
 </script>
 
 <header

@@ -1,24 +1,26 @@
 <script lang="ts">
-	import { numberInput } from 'styled-system/recipes';
-	import { NumberInput } from '@ark-ui/svelte/number-input';
+import { numberInput } from "styled-system/recipes";
+import { NumberInput } from "@ark-ui/svelte/number-input";
 
-	let {
-		label,
-		value = $bindable(),
-		min,
-		max
-	}: {
-		label: string;
-		value: string;
-		min: number;
-		max: number;
-	} = $props();
+let {
+	label,
+	value = $bindable(),
+	min,
+	max,
+	onValueChange,
+}: {
+	label: string;
+	value: string;
+	min: number;
+	max: number;
+	onValueChange?: (detail: { value: string }) => void;
+} = $props();
 
-	const classes = numberInput();
+const classes = numberInput();
 </script>
 
 <div class={classes.root}>
-	<NumberInput.Root bind:value {min} {max}>
+	<NumberInput.Root bind:value {min} {max} {onValueChange}>
 		<NumberInput.Label class={classes.label}>{label}</NumberInput.Label>
 		<NumberInput.Control class={classes.control}>
 			<NumberInput.DecrementTrigger class={classes.decrementTrigger}>

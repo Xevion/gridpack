@@ -1,8 +1,22 @@
 <script lang="ts">
-	import type { PositionedItem } from '$lib/justified-layout';
-	import { imageUrl } from '$lib/images';
+import type { PositionedItem, ImageFit } from "$lib/engines/types";
+import { imageUrl } from "$lib/images";
 
-	let { item, onError }: { item: PositionedItem; onError?: (id: number) => void } = $props();
+const fitMap: Record<ImageFit, string> = {
+	cover: "cover",
+	stretch: "fill",
+	contain: "contain",
+};
+
+let {
+	item,
+	fit = "cover",
+	onError,
+}: {
+	item: PositionedItem;
+	fit?: ImageFit;
+	onError?: (id: number) => void;
+} = $props();
 </script>
 
 <div
@@ -14,6 +28,7 @@
 		alt="Photo {item.id}"
 		loading="lazy"
 		class="image"
+		style:object-fit={fitMap[fit]}
 		onload={(e) => e.currentTarget.parentElement!.classList.add('loaded')}
 		onerror={() => onError?.(item.id)}
 	/>
@@ -98,7 +113,6 @@
 		display: block;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 		border-radius: 2px;
 		opacity: 1;
 		transition:
