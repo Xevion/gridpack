@@ -21,25 +21,13 @@ let {
 } = $props();
 
 const container = useContainerWidth();
-let failedIds = $state<Set<number>>(new Set());
 
-$effect(() => {
-	images;
-	failedIds = new Set();
-});
-
-function handleImageError(id: number) {
-	setTimeout(() => {
-		failedIds = new Set([...failedIds, id]);
-	}, 500);
-}
-
-let activeImages = $derived(images.filter((img) => !failedIds.has(img.id)));
+let aspectById = $derived(new Map(images.map((img) => [img.id, img.aspectRatio])));
 
 let layout = $derived(
 	container.width > 0
 		? engine.layout(
-				activeImages,
+				images,
 				{
 					width: container.width,
 					...(engine.containerMode === "fill" && containerHeight != null
@@ -69,7 +57,7 @@ let displayHeight = $derived(
 >
 	{#if layout}
 		{#each layout.items as item (item.id)}
-			<ImageFrame {item} {fit} onError={handleImageError} />
+			<ImageFrame {item} {fit} aspectRatio={aspectById.get(item.id) ?? 1} />
 		{/each}
 	{/if}
 </div>

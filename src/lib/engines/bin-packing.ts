@@ -200,12 +200,14 @@ function carve(free: FreeRect[], p: FreeRect): FreeRect[] {
 
 /**
  * Expand each placed footprint into adjacent empty space by fraction `g` of the
- * available room. Largest-first so dominant images claim slack; each footprint
- * clamps to its current neighbours, so the result never overlaps regardless of `g`.
+ * available room. Smallest-first, so boxed-in tiles get first claim on nearby
+ * slack and sizes stay even (a large neighbour can't swallow the gap before a
+ * small one reaches it). Each footprint clamps to its current neighbours, so the
+ * result never overlaps regardless of `g`.
  */
 function growToFill(placed: Placed[], W: number, H: number, g: number): void {
 	const order = [...placed.keys()].sort(
-		(a, b) => placed[b].w * placed[b].h - placed[a].w * placed[a].h,
+		(a, b) => placed[a].w * placed[a].h - placed[b].w * placed[b].h,
 	);
 
 	for (const idx of order) {
@@ -294,7 +296,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			type: "slider",
 			key: "fillGaps",
 			label: "Fill Gaps",
-			default: 85,
+			default: 70,
 			min: 0,
 			max: 100,
 			step: 5,

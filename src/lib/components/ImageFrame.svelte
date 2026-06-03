@@ -11,12 +11,29 @@ const fitMap: Record<ImageFit, string> = {
 let {
 	item,
 	fit = "cover",
-	onError,
+	aspectRatio,
 }: {
 	item: PositionedItem;
 	fit?: ImageFit;
-	onError?: (id: number) => void;
+	aspectRatio: number;
 } = $props();
+
+// Transient picsum failures (rate limits, hiccups) are retried in place with a
+// cache-busting suffix rather than removing the image from the layout — removal
+// would reflow every other tile and is the wrong response to a recoverable error.
+const MAX_RETRIES = 4;
+let retries = $state(0);
+let src = $derived(
+	imageUrl(item.id, aspectRatio) + (retries > 0 ? `?r=${retries}` : ""),
+);
+
+function handleError() {
+	if (retries >= MAX_RETRIES) return;
+	const next = retries + 1;
+	setTimeout(() => {
+		retries = next;
+	}, 400 * next);
+}
 </script>
 
 <div
@@ -24,13 +41,13 @@ let {
 	style="translate:{item.x}px {item.y}px;width:{item.width}px;height:{item.height}px"
 >
 	<img
-		src={imageUrl(item.id, item.width, item.height)}
+		{src}
 		alt="Photo {item.id}"
 		loading="lazy"
 		class="image"
 		style:object-fit={fitMap[fit]}
 		onload={(e) => e.currentTarget.parentElement!.classList.add('loaded')}
-		onerror={() => onError?.(item.id)}
+		onerror={handleError}
 	/>
 </div>
 
