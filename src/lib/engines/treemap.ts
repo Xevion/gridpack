@@ -1,10 +1,16 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	ContainerDimensions,
 	PositionedItem,
 	LayoutResult,
 } from "./types";
+import { defineEngine } from "./types";
+
+type TreemapParams = {
+	weightBy: "equal" | "aspect-ratio" | "random";
+	squarify: boolean;
+	padding: number;
+};
 
 /**
  * Treemap (Squarified Recursive Subdivision) Layout Engine
@@ -81,7 +87,7 @@ import type {
  * 6. Apply padding by insetting each cell's rectangle by padding/2 on each side.
  * 7. Return positioned items. totalHeight = containerHeight (fixed).
  */
-export const treemapEngine: LayoutEngine = {
+export const treemapEngine = defineEngine<TreemapParams>({
 	id: "treemap",
 	name: "Treemap",
 	containerMode: "fill",
@@ -116,7 +122,7 @@ export const treemapEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: Record<string, unknown>,
+		_params: TreemapParams,
 		gap: number,
 	): LayoutResult {
 		const containerHeight = container.height ?? 600;
@@ -140,4 +146,4 @@ export const treemapEngine: LayoutEngine = {
 
 		return { items: results, totalHeight: containerHeight };
 	},
-};
+});

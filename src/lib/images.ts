@@ -3,8 +3,8 @@ import type { LayoutItem } from "./engines/types";
 /** 5 aspect ratio buckets */
 const ASPECT_BUCKETS = [0.667, 0.8, 1.0, 1.333, 1.778] as const;
 
-/** Deterministic pseudo-random from seed */
-function seededRandom(seed: number): number {
+/** Deterministic pseudo-random in [0, 1) from an integer seed. */
+export function seededRandom(seed: number): number {
 	const x = Math.sin(seed * 9301 + 49297) * 49297;
 	return x - Math.floor(x);
 }

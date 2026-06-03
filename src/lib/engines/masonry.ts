@@ -1,10 +1,14 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	ContainerDimensions,
 	LayoutResult,
 } from "./types";
-import { stubLayout } from "./types";
+import { defineEngine, stubLayout } from "./types";
+
+type MasonryParams = {
+	columns: number;
+	assignment: "shortest-column" | "round-robin" | "balanced";
+};
 
 /**
  * Masonry (Column-Major) Layout Engine
@@ -53,7 +57,7 @@ import { stubLayout } from "./types";
  *    d. Update columnHeights[columnIndex] += imageHeight + gap.
  * 5. totalHeight = max(columnHeights) - gap.
  */
-export const masonryEngine: LayoutEngine = {
+export const masonryEngine = defineEngine<MasonryParams>({
 	id: "masonry",
 	name: "Masonry",
 	containerMode: "scroll",
@@ -81,9 +85,9 @@ export const masonryEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: Record<string, unknown>,
+		_params: MasonryParams,
 		gap: number,
 	): LayoutResult {
 		return stubLayout(items, container.width, 200, gap);
 	},
-};
+});

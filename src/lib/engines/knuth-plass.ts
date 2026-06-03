@@ -1,10 +1,15 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	ContainerDimensions,
 	LayoutResult,
 } from "./types";
-import { stubLayout } from "./types";
+import { defineEngine, stubLayout } from "./types";
+
+type KnuthPlassParams = {
+	targetRowHeight: number;
+	looseness: number;
+	orphanPenalty: number;
+};
 
 /**
  * Knuth-Plass (Paragraph-Breaking) Layout Engine
@@ -72,7 +77,7 @@ import { stubLayout } from "./types";
  * 6. Backtrack to recover the optimal set of row breaks.
  * 7. Render each row: rowHeight = containerWidth / sum(aspectRatios_in_row) adjusted for gaps.
  */
-export const knuthPlassEngine: LayoutEngine = {
+export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 	id: "knuth-plass",
 	name: "Knuth-Plass",
 	containerMode: "scroll",
@@ -110,9 +115,9 @@ export const knuthPlassEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: Record<string, unknown>,
+		_params: KnuthPlassParams,
 		gap: number,
 	): LayoutResult {
 		return stubLayout(items, container.width, 200, gap);
 	},
-};
+});

@@ -1,12 +1,17 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	PositionedItem,
 	ContainerDimensions,
 	LayoutResult,
 } from "./types";
+import { defineEngine } from "./types";
 
-export const justifiedEngine: LayoutEngine = {
+type JustifiedParams = {
+	targetRowHeight: number;
+	lastRow: "justify" | "left" | "center";
+};
+
+export const justifiedEngine = defineEngine<JustifiedParams>({
 	id: "justified",
 	name: "Justified",
 	containerMode: "scroll",
@@ -36,11 +41,10 @@ export const justifiedEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		params: Record<string, unknown>,
+		params: JustifiedParams,
 		gap: number,
 	): LayoutResult {
-		const targetRowHeight = params.targetRowHeight as number;
-		const lastRow = params.lastRow as string;
+		const { targetRowHeight, lastRow } = params;
 		const containerWidth = container.width;
 
 		const results: PositionedItem[] = [];
@@ -125,4 +129,4 @@ export const justifiedEngine: LayoutEngine = {
 
 		return { items: results, totalHeight: y - gap };
 	},
-};
+});

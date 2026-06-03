@@ -1,10 +1,14 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	ContainerDimensions,
 	LayoutResult,
 } from "./types";
-import { stubLayout } from "./types";
+import { defineEngine, stubLayout } from "./types";
+
+type SquareGridParams = {
+	cellSize: number;
+	cellAspectRatio: "1:1" | "4:3" | "3:2" | "16:9";
+};
 
 /**
  * Square Grid (Fixed Cell) Layout Engine
@@ -56,7 +60,7 @@ import { stubLayout } from "./types";
  *    y = floor(i / columns) * (cellHeight + gap)
  * 6. totalHeight = ceil(items.length / columns) * (cellHeight + gap) - gap.
  */
-export const squareGridEngine: LayoutEngine = {
+export const squareGridEngine = defineEngine<SquareGridParams>({
 	id: "square-grid",
 	name: "Grid",
 	containerMode: "scroll",
@@ -87,9 +91,9 @@ export const squareGridEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: Record<string, unknown>,
+		_params: SquareGridParams,
 		gap: number,
 	): LayoutResult {
 		return stubLayout(items, container.width, 200, gap);
 	},
-};
+});

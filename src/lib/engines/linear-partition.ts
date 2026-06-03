@@ -1,10 +1,14 @@
 import type {
-	LayoutEngine,
 	LayoutItem,
 	ContainerDimensions,
 	LayoutResult,
 } from "./types";
-import { stubLayout } from "./types";
+import { defineEngine, stubLayout } from "./types";
+
+type LinearPartitionParams = {
+	targetRowHeight: number;
+	costFunction: "variance" | "max-deviation";
+};
 
 /**
  * Linear Partition (DP-Optimal Justified) Layout Engine
@@ -65,7 +69,7 @@ import { stubLayout } from "./types";
  * 5. Backtrack through the DP table to recover row break indices.
  * 6. Commit each row using the same row-rendering logic as justified layout.
  */
-export const linearPartitionEngine: LayoutEngine = {
+export const linearPartitionEngine = defineEngine<LinearPartitionParams>({
 	id: "linear-partition",
 	name: "Linear Partition",
 	containerMode: "scroll",
@@ -94,9 +98,9 @@ export const linearPartitionEngine: LayoutEngine = {
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: Record<string, unknown>,
+		_params: LinearPartitionParams,
 		gap: number,
 	): LayoutResult {
 		return stubLayout(items, container.width, 200, gap);
 	},
-};
+});

@@ -392,6 +392,8 @@ const switchControlRecipe = defineSlotRecipe({
 			transition: "background 0.15s ease, box-shadow 0.15s ease",
 			_checked: {
 				...accentFill,
+				// accentFill carries a 3px radius; keep the pill shape when checked
+				borderRadius: "9999px",
 			},
 			_focusVisible: {
 				outline: "2px solid {colors.accent.focus}",

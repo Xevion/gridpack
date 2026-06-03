@@ -94,7 +94,7 @@ let {
 		animation: shimmer 1.8s ease-in-out infinite;
 	}
 
-	.image-frame.loaded::before {
+	.image-frame:global(.loaded)::before {
 		animation: none;
 	}
 
