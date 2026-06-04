@@ -271,7 +271,10 @@ const selectControlRecipe = defineSlotRecipe({
 			top: "-6px",
 			right: "10px",
 			pointerEvents: "none",
-			zIndex: "51",
+			// Behind the content (z 50): the opaque popup covers the caret's
+			// overlapping base, so only the triangle above the popup's top rim shows
+			// and the caret's edge treatment can never paint over the first row.
+			zIndex: "49",
 			lineHeight: "0",
 			// Matches the content gradient's color at the caret's top-right anchor
 			// (midpoint of surface.light → parchment.warm ≈ surface DEFAULT), so the
@@ -282,6 +285,10 @@ const selectControlRecipe = defineSlotRecipe({
 		},
 		content: {
 			minWidth: "var(--reference-width)",
+			// position required for zIndex to take effect — without it the static
+			// content can't paint above the absolutely-positioned caret (z 49), and
+			// the caret's edge treatment bleeds onto the first row.
+			position: "relative",
 			background: "linear-gradient(135deg, {colors.surface.light}, {colors.parchment.warm})",
 			borderRadius: "4px",
 			overflow: "hidden",

@@ -106,9 +106,31 @@
 				</Select.Content>
 				<!-- Caret after Content so sibling selector (~) can read data-state -->
 				<span class="{classes.caret} select-caret">
-					<svg width="14" height="7" viewBox="0 0 14 7">
-						<path d="M0 7L7 0l7 7z" fill="rgba(0,0,0,0.1)" />
-						<path d="M1.5 7L7 1.5 12.5 7z" fill="currentColor" />
+					<svg width="14" height="9" viewBox="0 0 14 9">
+						<!-- Edge treatment matches the content's top rim 1:1. The two upper
+						     edges are at 45°, so weights are set perpendicular, not horizontal:
+						     • border  — the upper edges stroked at width 2; the fill (drawn
+						       next) covers the inner half, leaving a true 1px rim outside
+						       (matches content's 0 0 0 1px rgba(0,0,0,0.08)).
+						     • highlight — a 1px line offset just *inside* the edges, so it sits
+						       flush like content's inset 0 1px 0 rgba(255,255,255,0.3) rather
+						       than a centred stroke spilling outside.
+						     The base (y≈7.5) tucks behind the content (caret z 49 < 50). -->
+						<path
+							d="M1 7.5L7 1.5 13 7.5"
+							fill="none"
+							stroke="rgba(0,0,0,0.08)"
+							stroke-width="2"
+							stroke-linejoin="round"
+						/>
+						<path d="M7 1.5L13 7.5 1 7.5z" fill="currentColor" />
+						<path
+							d="M2.4 7.5L7 2.9 11.6 7.5"
+							fill="none"
+							stroke="rgba(255,255,255,0.3)"
+							stroke-width="1"
+							stroke-linejoin="round"
+						/>
 					</svg>
 				</span>
 			</Select.Positioner>
