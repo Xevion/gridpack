@@ -2,6 +2,7 @@
 import { css } from "styled-system/css";
 import type { LayoutItem, LayoutEngine, ImageFit } from "$lib/engines/types";
 import { useContainerWidth } from "$lib/composables/use-container-width.svelte";
+import { useThrottled } from "$lib/composables/use-throttled.svelte";
 import ImageFrame from "./ImageFrame.svelte";
 
 let {
@@ -24,25 +25,40 @@ const container = useContainerWidth();
 
 let aspectById = $derived(new Map(images.map((img) => [img.id, img.aspectRatio])));
 
-let layout = $derived(
-	container.width > 0
-		? engine.layout(
-				images,
-				{
-					width: container.width,
-					...(engine.containerMode === "fill" && containerHeight != null
-						? { height: containerHeight }
-						: {}),
-				},
-				params,
-				gap,
-			)
-		: null,
+// Throttle the entire layout-input set so rapid retargeting (holding the count
+// stepper, dragging a slider, live resize) recomputes ~7x/sec instead of every
+// frame. Tiles get time to travel toward each target before being re-aimed,
+// which stops the springs from fighting their own momentum. Engine and params
+// are throttled together so they always swap as a matched pair.
+const inputs = useThrottled(
+	() => ({
+		images,
+		engine,
+		params,
+		gap,
+		width: container.width,
+		height: containerHeight,
+	}),
+	140,
 );
 
-let isFillMode = $derived(engine.containerMode === "fill");
+let layout = $derived.by(() => {
+	const { images, engine, params, gap, width, height } = inputs.current;
+	if (width <= 0) return null;
+	return engine.layout(
+		images,
+		{
+			width,
+			...(engine.containerMode === "fill" && height != null ? { height } : {}),
+		},
+		params,
+		gap,
+	);
+});
+
+let isFillMode = $derived(inputs.current.engine.containerMode === "fill");
 let displayHeight = $derived(
-	isFillMode ? (containerHeight ?? 0) : (layout?.totalHeight ?? 0),
+	isFillMode ? (inputs.current.height ?? 0) : (layout?.totalHeight ?? 0),
 );
 </script>
 

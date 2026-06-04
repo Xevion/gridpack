@@ -1,6 +1,8 @@
 <script lang="ts">
 import { untrack } from "svelte";
 import { Spring } from "svelte/motion";
+import { scale } from "svelte/transition";
+import { cubicIn, cubicOut } from "svelte/easing";
 import type { PositionedItem, ImageFit } from "$lib/engines/types";
 import { imageUrl } from "$lib/images";
 
@@ -51,9 +53,13 @@ function handleError() {
 }
 </script>
 
+<!-- scale animates `transform`, independent of the spring-driven `translate`, so
+     tiles place down on enter and shrink away on exit without disturbing position. -->
 <div
 	class="image-frame"
 	style="translate:{box.current.x}px {box.current.y}px;width:{item.width}px;height:{item.height}px"
+	in:scale={{ start: 0.85, duration: 220, easing: cubicOut }}
+	out:scale={{ start: 0.85, duration: 180, easing: cubicIn }}
 >
 	<img
 		{src}
