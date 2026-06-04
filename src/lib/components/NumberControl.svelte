@@ -1,27 +1,29 @@
 <script lang="ts">
-import { css } from "styled-system/css";
-import { numberInput } from "styled-system/recipes";
-import { NumberInput } from "@ark-ui/svelte/number-input";
-import HelpTip from "./HelpTip.svelte";
+	import { NumberInput } from "@ark-ui/svelte/number-input";
 
-let {
-	label,
-	value = $bindable(),
-	min,
-	max,
-	help,
-	onValueChange,
-}: {
-	label: string;
-	value: string;
-	min: number;
-	max: number;
-	help?: string;
-	onValueChange?: (detail: { value: string }) => void;
-} = $props();
+	import { css } from "styled-system/css";
+	import { numberInput } from "styled-system/recipes";
 
-const classes = numberInput();
-const labelInner = css({ display: "inline-flex", alignItems: "center", gap: "3px" });
+	import HelpTip from "./HelpTip.svelte";
+
+	let {
+		label,
+		value = $bindable(),
+		min,
+		max,
+		help,
+		onValueChange,
+	}: {
+		label: string;
+		value: string;
+		min: number;
+		max: number;
+		help?: string;
+		onValueChange?: (detail: { value: string }) => void;
+	} = $props();
+
+	const classes = numberInput();
+	const labelInner = css({ display: "inline-flex", alignItems: "center", gap: "3px" });
 </script>
 
 <div class={classes.root}>

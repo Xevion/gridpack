@@ -1,9 +1,5 @@
-import type {
-	LayoutItem,
-	ContainerDimensions,
-	PositionedItem,
-	LayoutResult,
-} from "./types";
+import type { LayoutItem, ContainerDimensions, PositionedItem, LayoutResult } from "./types";
+
 import { defineEngine } from "./types";
 
 type TreemapParams = {

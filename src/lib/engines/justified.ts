@@ -1,9 +1,5 @@
-import type {
-	LayoutItem,
-	PositionedItem,
-	ContainerDimensions,
-	LayoutResult,
-} from "./types";
+import type { LayoutItem, PositionedItem, ContainerDimensions, LayoutResult } from "./types";
+
 import { defineEngine } from "./types";
 
 type JustifiedParams = {
@@ -60,9 +56,7 @@ export const justifiedEngine = defineEngine<JustifiedParams>({
 			for (let i = 0; i < row.length; i++) {
 				const item = row[i];
 				const isLast = i === row.length - 1;
-				const w = isLast
-					? containerWidth - x
-					: Math.round(rowHeight * item.aspectRatio);
+				const w = isLast ? containerWidth - x : Math.round(rowHeight * item.aspectRatio);
 				results.push({
 					id: item.id,
 					x,
@@ -90,10 +84,8 @@ export const justifiedEngine = defineEngine<JustifiedParams>({
 
 			if (lastRow === "center") {
 				const totalWidth =
-					row.reduce(
-						(sum, item) => sum + Math.round(naturalHeight * item.aspectRatio),
-						0,
-					) + totalGaps;
+					row.reduce((sum, item) => sum + Math.round(naturalHeight * item.aspectRatio), 0) +
+					totalGaps;
 				x = Math.round((containerWidth - totalWidth) / 2);
 			}
 

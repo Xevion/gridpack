@@ -1,56 +1,55 @@
 <script lang="ts">
-import { untrack } from "svelte";
-import { Spring } from "svelte/motion";
-import { scale } from "svelte/transition";
-import { cubicIn, cubicOut } from "svelte/easing";
-import type { PositionedItem, ImageFit } from "$lib/engines/types";
-import { imageUrl } from "$lib/images";
+	import { untrack } from "svelte";
+	import { cubicIn, cubicOut } from "svelte/easing";
+	import { Spring } from "svelte/motion";
+	import { scale } from "svelte/transition";
 
-const fitMap: Record<ImageFit, string> = {
-	cover: "cover",
-	stretch: "fill",
-	contain: "contain",
-};
+	import type { PositionedItem, ImageFit } from "$lib/engines/types";
+	import { imageUrl } from "$lib/images";
 
-let {
-	item,
-	fit = "cover",
-	aspectRatio,
-}: {
-	item: PositionedItem;
-	fit?: ImageFit;
-	aspectRatio: number;
-} = $props();
+	const fitMap: Record<ImageFit, string> = {
+		cover: "cover",
+		stretch: "fill",
+		contain: "contain",
+	};
 
-// Drive position through a spring so that rapid retargeting carries the existing
-// velocity forward instead of restarting an easing curve from rest — a CSS
-// transition would snap the velocity on every new target, producing a jerk.
-// untrack: seed from the initial box only; the $effect owns every retarget after.
-const box = new Spring(
-	untrack(() => ({ x: item.x, y: item.y })),
-	{ stiffness: 0.05, damping: 0.55 },
-);
+	let {
+		item,
+		fit = "cover",
+		aspectRatio,
+	}: {
+		item: PositionedItem;
+		fit?: ImageFit;
+		aspectRatio: number;
+	} = $props();
 
-$effect(() => {
-	box.target = { x: item.x, y: item.y };
-});
+	// Drive position through a spring so that rapid retargeting carries the existing
+	// velocity forward instead of restarting an easing curve from rest — a CSS
+	// transition would snap the velocity on every new target, producing a jerk.
+	// untrack: seed from the initial box only; the $effect owns every retarget after.
+	const box = new Spring(
+		untrack(() => ({ x: item.x, y: item.y })),
+		{ stiffness: 0.05, damping: 0.55 },
+	);
 
-// Transient picsum failures (rate limits, hiccups) are retried in place with a
-// cache-busting suffix rather than removing the image from the layout — removal
-// would reflow every other tile and is the wrong response to a recoverable error.
-const MAX_RETRIES = 4;
-let retries = $state(0);
-let src = $derived(
-	imageUrl(item.id, aspectRatio) + (retries > 0 ? `?r=${retries}` : ""),
-);
+	$effect(() => {
+		box.target = { x: item.x, y: item.y };
+	});
 
-function handleError() {
-	if (retries >= MAX_RETRIES) return;
-	const next = retries + 1;
-	setTimeout(() => {
-		retries = next;
-	}, 400 * next);
-}
+	// Transient picsum failures (rate limits, hiccups) are retried in place with a
+	// cache-busting suffix rather than removing the image from the layout — removal
+	// would reflow every other tile and is the wrong response to a recoverable error.
+	const MAX_RETRIES = 4;
+	let retries = $state(0);
+	let src = $derived(imageUrl(item.id, aspectRatio) + (retries > 0 ? `?r=${retries}` : ""));
+
+	function handleError() {
+		if (retries >= MAX_RETRIES) return;
+		const next = retries + 1;
+		setTimeout(() => {
+			retries = next;
+		}, 400 * next);
+	}
 </script>
 
 <!-- scale animates `transform`, independent of the spring-driven `translate`, so
@@ -67,7 +66,7 @@ function handleError() {
 		loading="lazy"
 		class="image"
 		style:object-fit={fitMap[fit]}
-		onload={(e) => e.currentTarget.parentElement!.classList.add('loaded')}
+		onload={(e) => e.currentTarget.parentElement?.classList.add("loaded")}
 		onerror={handleError}
 	/>
 </div>
@@ -103,7 +102,7 @@ function handleError() {
 	}
 
 	.image-frame::after {
-		content: '';
+		content: "";
 		position: absolute;
 		inset: calc(var(--mat-width) - 1px);
 		border-radius: 2px;
@@ -117,7 +116,7 @@ function handleError() {
 	}
 
 	.image-frame::before {
-		content: '';
+		content: "";
 		position: absolute;
 		inset: var(--mat-width);
 		border-radius: 2px;

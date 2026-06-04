@@ -1,10 +1,11 @@
 import type { LayoutEngine } from "./types";
+
+import { binPackingEngine } from "./bin-packing";
 import { justifiedEngine } from "./justified";
+import { knuthPlassEngine } from "./knuth-plass";
+import { linearPartitionEngine } from "./linear-partition";
 import { masonryEngine } from "./masonry";
 import { squareGridEngine } from "./square-grid";
-import { linearPartitionEngine } from "./linear-partition";
-import { knuthPlassEngine } from "./knuth-plass";
-import { binPackingEngine } from "./bin-packing";
 import { treemapEngine } from "./treemap";
 
 export const engines: LayoutEngine[] = [

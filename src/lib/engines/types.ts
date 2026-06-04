@@ -1,7 +1,7 @@
 export type ContainerMode = "scroll" | "fill";
 export type ImageFit = "cover" | "stretch" | "contain";
 
-export type SliderControl = {
+type SliderControl = {
 	type: "slider";
 	key: string;
 	label: string;
@@ -16,7 +16,7 @@ export type SliderControl = {
 	help?: string;
 };
 
-export type NumberControl = {
+type NumberControl = {
 	type: "number";
 	key: string;
 	label: string;
@@ -26,7 +26,7 @@ export type NumberControl = {
 	help?: string;
 };
 
-export type SelectControl = {
+type SelectControl = {
 	type: "select";
 	key: string;
 	label: string;
@@ -35,7 +35,7 @@ export type SelectControl = {
 	help?: string;
 };
 
-export type SwitchControl = {
+type SwitchControl = {
 	type: "switch";
 	key: string;
 	label: string;
@@ -43,11 +43,7 @@ export type SwitchControl = {
 	help?: string;
 };
 
-export type ControlDescriptor =
-	| SliderControl
-	| NumberControl
-	| SelectControl
-	| SwitchControl;
+export type ControlDescriptor = SliderControl | NumberControl | SelectControl | SwitchControl;
 
 export interface LayoutItem {
 	id: number;
@@ -77,12 +73,7 @@ export interface LayoutEngine<P = Record<string, unknown>> {
 	name: string;
 	containerMode: ContainerMode;
 	controls: ControlDescriptor[];
-	layout(
-		items: LayoutItem[],
-		container: ContainerDimensions,
-		params: P,
-		gap: number,
-	): LayoutResult;
+	layout(items: LayoutItem[], container: ContainerDimensions, params: P, gap: number): LayoutResult;
 }
 
 /**
@@ -112,9 +103,7 @@ export function resolveParams(
 				break;
 			}
 			case "select":
-				out[ctrl.key] = ctrl.options.some((o) => o.value === v)
-					? v
-					: ctrl.default;
+				out[ctrl.key] = ctrl.options.some((o) => o.value === v) ? v : ctrl.default;
 				break;
 			case "switch":
 				out[ctrl.key] = typeof v === "boolean" ? v : ctrl.default;
@@ -136,12 +125,7 @@ export function defineEngine<P extends Record<string, unknown>>(cfg: {
 	name: string;
 	containerMode: ContainerMode;
 	controls: ControlDescriptor[];
-	layout(
-		items: LayoutItem[],
-		container: ContainerDimensions,
-		params: P,
-		gap: number,
-	): LayoutResult;
+	layout(items: LayoutItem[], container: ContainerDimensions, params: P, gap: number): LayoutResult;
 }): LayoutEngine {
 	return {
 		id: cfg.id,
@@ -168,7 +152,7 @@ export function stubLayout(
 	const results: PositionedItem[] = [];
 	let x = 0;
 	let y = 0;
-	let rowHeight = cellHeight;
+	const rowHeight = cellHeight;
 
 	for (const item of items) {
 		const w = Math.round(cellHeight * item.aspectRatio);

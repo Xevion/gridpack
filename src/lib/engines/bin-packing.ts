@@ -1,11 +1,7 @@
-import type {
-	LayoutItem,
-	ContainerDimensions,
-	PositionedItem,
-	LayoutResult,
-} from "./types";
-import { defineEngine } from "./types";
+import type { LayoutItem, ContainerDimensions, PositionedItem, LayoutResult } from "./types";
+
 import { seededRandom } from "../images";
+import { defineEngine } from "./types";
 
 type BinPackingParams = {
 	sortStrategy: "area-desc" | "height-desc" | "width-desc" | "aspect-desc";
@@ -150,10 +146,7 @@ function contains(outer: FreeRect, inner: FreeRect): boolean {
 /** True when the two rectangles share interior area. */
 function intersects(a: FreeRect, b: FreeRect): boolean {
 	return (
-		a.x < b.x + b.w - EPS &&
-		a.x + a.w > b.x + EPS &&
-		a.y < b.y + b.h - EPS &&
-		a.y + a.h > b.y + EPS
+		a.x < b.x + b.w - EPS && a.x + a.w > b.x + EPS && a.y < b.y + b.h - EPS && a.y + a.h > b.y + EPS
 	);
 }
 
@@ -366,9 +359,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 		const weights =
 			v === 0
 				? items.map(() => 1)
-				: items.map((it) =>
-						Math.max(0.15, 1 + v * (seededRandom(it.id) * 2 - 1)),
-					);
+				: items.map((it) => Math.max(0.15, 1 + v * (seededRandom(it.id) * 2 - 1)));
 		const weightSum = weights.reduce((s, w) => s + w, 0);
 
 		const extreme = (ar: number) => Math.max(ar, 1 / ar);
@@ -396,8 +387,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 					primary = b.w - a.w;
 					break;
 				case "aspect-desc":
-					primary =
-						extreme(b.item.aspectRatio) - extreme(a.item.aspectRatio);
+					primary = extreme(b.item.aspectRatio) - extreme(a.item.aspectRatio);
 					break;
 			}
 			if (Math.abs(primary) > EPS) return primary;

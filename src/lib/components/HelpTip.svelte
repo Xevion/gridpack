@@ -1,11 +1,12 @@
 <script lang="ts">
-import { tooltip } from "styled-system/recipes";
-import { Tooltip } from "@ark-ui/svelte/tooltip";
-import { Portal } from "@ark-ui/svelte/portal";
+	import { Portal } from "@ark-ui/svelte/portal";
+	import { Tooltip } from "@ark-ui/svelte/tooltip";
 
-let { text }: { text: string } = $props();
+	import { tooltip } from "styled-system/recipes";
 
-const classes = tooltip();
+	let { text }: { text: string } = $props();
+
+	const classes = tooltip();
 </script>
 
 <Tooltip.Root

@@ -38,13 +38,7 @@ const REQUEST_LONG_EDGE = 800;
  * a deterministic image for *any* seed and never 404s.
  */
 export function imageUrl(id: number, aspectRatio: number): string {
-	const w =
-		aspectRatio >= 1
-			? REQUEST_LONG_EDGE
-			: Math.round(REQUEST_LONG_EDGE * aspectRatio);
-	const h =
-		aspectRatio >= 1
-			? Math.round(REQUEST_LONG_EDGE / aspectRatio)
-			: REQUEST_LONG_EDGE;
+	const w = aspectRatio >= 1 ? REQUEST_LONG_EDGE : Math.round(REQUEST_LONG_EDGE * aspectRatio);
+	const h = aspectRatio >= 1 ? Math.round(REQUEST_LONG_EDGE / aspectRatio) : REQUEST_LONG_EDGE;
 	return `https://picsum.photos/seed/${id}/${w}/${h}`;
 }

@@ -1,8 +1,5 @@
-import type {
-	LayoutItem,
-	ContainerDimensions,
-	LayoutResult,
-} from "./types";
+import type { LayoutItem, ContainerDimensions, LayoutResult } from "./types";
+
 import { defineEngine, stubLayout } from "./types";
 
 type KnuthPlassParams = {

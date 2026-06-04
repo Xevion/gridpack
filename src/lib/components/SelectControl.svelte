@@ -6,6 +6,7 @@
 	import { css } from "styled-system/css";
 	import { selectControl, tooltip } from "styled-system/recipes";
 
+	import ControlIcon from "./ControlIcon.svelte";
 	import HelpTip from "./HelpTip.svelte";
 
 	type Option = { label: string; value: string; icon?: string; hint?: string };
@@ -70,7 +71,7 @@
 		<Portal>
 			<Select.Positioner>
 				<Select.Content class={classes.content}>
-					{#each collection.items as item}
+					{#each collection.items as item (item.value)}
 						<Select.Item class={classes.item} {item}>
 							{#if item.hint}
 								<Tooltip.Root
@@ -141,7 +142,7 @@
 
 {#snippet itemBody(item: Option)}
 	{#if item.icon}
-		<span class={classes.itemIcon}>{@html item.icon}</span>
+		<span class={classes.itemIcon}><ControlIcon name={item.icon} /></span>
 	{/if}
 	<Select.ItemText class={classes.itemText}>{item.label}</Select.ItemText>
 	<Select.ItemIndicator class={classes.itemIndicator}>

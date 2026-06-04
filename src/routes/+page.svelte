@@ -1,73 +1,70 @@
 <script lang="ts">
-import { css } from "styled-system/css";
-import Header from "$lib/components/Header.svelte";
-import ControlsPanel from "$lib/components/ControlsPanel.svelte";
-import SegmentedControl from "$lib/components/SegmentedControl.svelte";
-import EngineControls from "$lib/components/EngineControls.svelte";
-import ImageGrid from "$lib/components/ImageGrid.svelte";
-import { generateImages } from "$lib/images";
-import { engines, getEngine } from "$lib/engines/registry";
-import { resolveParams } from "$lib/engines/types";
-import { globalControls, resolveGlobals } from "$lib/global-controls";
-import { useElementSize } from "$lib/composables/use-element-size.svelte";
+	import ControlsPanel from "$lib/components/ControlsPanel.svelte";
+	import EngineControls from "$lib/components/EngineControls.svelte";
+	import Header from "$lib/components/Header.svelte";
+	import ImageGrid from "$lib/components/ImageGrid.svelte";
+	import SegmentedControl from "$lib/components/SegmentedControl.svelte";
+	import { useElementSize } from "$lib/composables/use-element-size.svelte";
+	import { engines, getEngine } from "$lib/engines/registry";
+	import { resolveParams } from "$lib/engines/types";
+	import { globalControls, resolveGlobals } from "$lib/global-controls";
+	import { generateImages } from "$lib/images";
 
-let engineId = $state("justified");
-let engine = $derived(getEngine(engineId));
+	import { css } from "styled-system/css";
 
-// Shared globals (Images/Gap/Fit) flow through the same descriptor pipeline
-// as engine controls; raw edits are resolved (clamped/validated/defaulted) for
-// both display and consumption.
-let globalRaw = $state<Record<string, unknown>>({});
-let globalParams = $derived(resolveGlobals(globalRaw));
+	let engineId = $state("justified");
+	let engine = $derived(getEngine(engineId));
 
-// Per-engine params, kept sticky across engine switches: each engine reads its
-// own slice, and resolveParams fills defaults so a never-touched engine still
-// gets a complete bag. No reset effect — switching back restores prior edits.
-let paramsByEngine = $state<Record<string, Record<string, unknown>>>({});
-let engineParams = $derived(
-	resolveParams(engine.controls, paramsByEngine[engineId] ?? {}),
-);
+	// Shared globals (Images/Gap/Fit) flow through the same descriptor pipeline
+	// as engine controls; raw edits are resolved (clamped/validated/defaulted) for
+	// both display and consumption.
+	let globalRaw = $state<Record<string, unknown>>({});
+	let globalParams = $derived(resolveGlobals(globalRaw));
 
-let images = $derived(generateImages(globalParams.count));
+	// Per-engine params, kept sticky across engine switches: each engine reads its
+	// own slice, and resolveParams fills defaults so a never-touched engine still
+	// gets a complete bag. No reset effect — switching back restores prior edits.
+	let paramsByEngine = $state<Record<string, Record<string, unknown>>>({});
+	let engineParams = $derived(resolveParams(engine.controls, paramsByEngine[engineId] ?? {}));
 
-const topSection = useElementSize();
+	let images = $derived(generateImages(globalParams.count));
 
-let windowHeight = $state(
-	typeof window !== "undefined" ? window.innerHeight : 800,
-);
+	const topSection = useElementSize();
 
-$effect(() => {
-	function onResize() {
-		windowHeight = window.innerHeight;
+	let windowHeight = $state(typeof window !== "undefined" ? window.innerHeight : 800);
+
+	$effect(() => {
+		function onResize() {
+			windowHeight = window.innerHeight;
+		}
+		window.addEventListener("resize", onResize);
+		return () => window.removeEventListener("resize", onResize);
+	});
+
+	const verticalPadding = 24 + 16; // py-6 (24px) + gap below controls
+	let availableHeight = $derived(
+		Math.max(200, windowHeight - (topSection.height ?? 0) - verticalPadding),
+	);
+
+	function handleGlobalChange(key: string, value: unknown) {
+		globalRaw = { ...globalRaw, [key]: value };
 	}
-	window.addEventListener("resize", onResize);
-	return () => window.removeEventListener("resize", onResize);
-});
 
-const verticalPadding = 24 + 16; // py-6 (24px) + gap below controls
-let availableHeight = $derived(
-	Math.max(200, windowHeight - (topSection.height ?? 0) - verticalPadding),
-);
+	function handleParamChange(key: string, value: unknown) {
+		paramsByEngine = {
+			...paramsByEngine,
+			[engineId]: { ...(paramsByEngine[engineId] ?? {}), [key]: value },
+		};
+	}
 
-function handleGlobalChange(key: string, value: unknown) {
-	globalRaw = { ...globalRaw, [key]: value };
-}
-
-function handleParamChange(key: string, value: unknown) {
-	paramsByEngine = {
-		...paramsByEngine,
-		[engineId]: { ...(paramsByEngine[engineId] ?? {}), [key]: value },
-	};
-}
-
-let engineItems = engines.map((e) => ({ value: e.id, label: e.name }));
+	let engineItems = engines.map((e) => ({ value: e.id, label: e.name }));
 </script>
 
-<div class={css({ maxWidth: '1400px', mx: 'auto', px: '8', py: '6' })}>
+<div class={css({ maxWidth: "1400px", mx: "auto", px: "8", py: "6" })}>
 	<div bind:this={topSection.element}>
 		<Header title="Gridpack" subtitle="image layout algorithms" />
 
-		<div class={css({ mb: '3', px: '4' })}>
+		<div class={css({ mb: "3", px: "4" })}>
 			<SegmentedControl bind:value={engineId} items={engineItems} />
 		</div>
 
@@ -91,6 +88,6 @@ let engineItems = engines.map((e) => ({ value: e.id, label: e.name }));
 		params={engineParams}
 		gap={globalParams.gap}
 		fit={globalParams.fit}
-		containerHeight={engine.containerMode === 'fill' ? availableHeight : undefined}
+		containerHeight={engine.containerMode === "fill" ? availableHeight : undefined}
 	/>
 </div>
