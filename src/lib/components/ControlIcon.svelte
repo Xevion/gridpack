@@ -27,4 +27,18 @@
 		/>
 		<rect x="3.5" y="2.5" width="5" height="7" rx="0.5" />
 	</svg>
+{:else if name === "reseed"}
+	<svg
+		width="12"
+		height="12"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2.5"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path d="M20 11a8 8 0 1 0-1.8 6.3" />
+		<path d="M20 4v6h-6" />
+	</svg>
 {/if}

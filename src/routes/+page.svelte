@@ -7,7 +7,7 @@
 	import { useElementSize } from "$lib/composables/use-element-size.svelte";
 	import { engines, getEngine } from "$lib/engines/registry";
 	import { resolveParams } from "$lib/engines/types";
-	import { globalControls, resolveGlobals } from "$lib/global-controls";
+	import { datasetControls, renderControls, resolveGlobals } from "$lib/global-controls";
 	import { generateImages } from "$lib/images";
 
 	import { css } from "styled-system/css";
@@ -15,11 +15,16 @@
 	let engineId = $state("justified");
 	let engine = $derived(getEngine(engineId));
 
-	// Shared globals (Images/Gap/Fit) flow through the same descriptor pipeline
+	// Shared globals (dataset + render) flow through the same descriptor pipeline
 	// as engine controls; raw edits are resolved (clamped/validated/defaulted) for
 	// both display and consumption.
 	let globalRaw = $state<Record<string, unknown>>({});
 	let globalParams = $derived(resolveGlobals(globalRaw));
+
+	// The dataset seed lives outside the descriptor bag because Reseed is an action,
+	// not a value: bumping it swaps every id, so the gallery hard-cuts to a fresh
+	// random sample rather than morphing.
+	let datasetSeed = $state(1);
 
 	// Per-engine params, kept sticky across engine switches: each engine reads its
 	// own slice, and resolveParams fills defaults so a never-touched engine still
@@ -27,7 +32,15 @@
 	let paramsByEngine = $state<Record<string, Record<string, unknown>>>({});
 	let engineParams = $derived(resolveParams(engine.controls, paramsByEngine[engineId] ?? {}));
 
-	let images = $derived(generateImages(globalParams.count));
+	let images = $derived(
+		generateImages({
+			count: globalParams.count,
+			bias: globalParams.bias,
+			spread: globalParams.spread,
+			order: globalParams.order,
+			seed: datasetSeed,
+		}),
+	);
 
 	const topSection = useElementSize();
 
@@ -47,6 +60,10 @@
 	);
 
 	function handleGlobalChange(key: string, value: unknown) {
+		if (key === "reseed") {
+			datasetSeed = Math.floor(Math.random() * 1_000_000) + 1;
+			return;
+		}
 		globalRaw = { ...globalRaw, [key]: value };
 	}
 
@@ -70,7 +87,12 @@
 
 		<ControlsPanel>
 			<EngineControls
-				controls={globalControls}
+				controls={datasetControls}
+				params={globalParams}
+				onchange={handleGlobalChange}
+			/>
+			<EngineControls
+				controls={renderControls}
 				params={globalParams}
 				onchange={handleGlobalChange}
 			/>

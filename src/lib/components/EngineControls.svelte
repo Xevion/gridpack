@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ControlDescriptor } from "$lib/engines/types";
 
+	import ButtonControl from "./ButtonControl.svelte";
 	import NumberControl from "./NumberControl.svelte";
 	import SelectControl from "./SelectControl.svelte";
 	import SliderControl from "./SliderControl.svelte";
@@ -38,6 +39,7 @@
 			value={val}
 			min={ctrl.min}
 			max={ctrl.max}
+			presets={ctrl.presets}
 			help={ctrl.help}
 			onValueChange={(detail) => {
 				const v = parseFloat(detail.value);
@@ -60,6 +62,13 @@
 			checked={val}
 			help={ctrl.help}
 			onCheckedChange={(checked) => onchange(ctrl.key, checked)}
+		/>
+	{:else if ctrl.type === "button"}
+		<ButtonControl
+			label={ctrl.label}
+			icon={ctrl.icon}
+			help={ctrl.help}
+			onclick={() => onchange(ctrl.key, null)}
 		/>
 	{/if}
 {/each}

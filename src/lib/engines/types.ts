@@ -23,6 +23,8 @@ type NumberControl = {
 	default: number;
 	min: number;
 	max: number;
+	/** Quick-jump values rendered as chips beside the stepper. */
+	presets?: number[];
 	help?: string;
 };
 
@@ -43,7 +45,26 @@ type SwitchControl = {
 	help?: string;
 };
 
-export type ControlDescriptor = SliderControl | NumberControl | SelectControl | SwitchControl;
+/**
+ * An action, not a value: clicking it fires an `onchange` with no meaningful
+ * payload. It carries no `key` value through {@link resolveParams} (buttons are
+ * skipped there), so the host decides what the click means by `key`.
+ */
+type ButtonControl = {
+	type: "button";
+	key: string;
+	label: string;
+	/** Named glyph resolved by `ControlIcon`. */
+	icon?: string;
+	help?: string;
+};
+
+export type ControlDescriptor =
+	| SliderControl
+	| NumberControl
+	| SelectControl
+	| SwitchControl
+	| ButtonControl;
 
 export interface LayoutItem {
 	id: number;
@@ -107,6 +128,9 @@ export function resolveParams(
 				break;
 			case "switch":
 				out[ctrl.key] = typeof v === "boolean" ? v : ctrl.default;
+				break;
+			case "button":
+				// Actions hold no value; nothing to resolve.
 				break;
 		}
 	}
