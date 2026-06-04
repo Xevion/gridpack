@@ -1,4 +1,6 @@
 <script lang="ts">
+import { untrack } from "svelte";
+import { Spring } from "svelte/motion";
 import type { PositionedItem, ImageFit } from "$lib/engines/types";
 import { imageUrl } from "$lib/images";
 
@@ -17,6 +19,19 @@ let {
 	fit?: ImageFit;
 	aspectRatio: number;
 } = $props();
+
+// Drive position through a spring so that rapid retargeting carries the existing
+// velocity forward instead of restarting an easing curve from rest — a CSS
+// transition would snap the velocity on every new target, producing a jerk.
+// untrack: seed from the initial box only; the $effect owns every retarget after.
+const box = new Spring(
+	untrack(() => ({ x: item.x, y: item.y })),
+	{ stiffness: 0.05, damping: 0.55 },
+);
+
+$effect(() => {
+	box.target = { x: item.x, y: item.y };
+});
 
 // Transient picsum failures (rate limits, hiccups) are retried in place with a
 // cache-busting suffix rather than removing the image from the layout — removal
@@ -38,7 +53,7 @@ function handleError() {
 
 <div
 	class="image-frame"
-	style="translate:{item.x}px {item.y}px;width:{item.width}px;height:{item.height}px"
+	style="translate:{box.current.x}px {box.current.y}px;width:{item.width}px;height:{item.height}px"
 >
 	<img
 		{src}
@@ -67,7 +82,6 @@ function handleError() {
 			inset 0 1px 0 rgba(255, 255, 255, 0.6),
 			inset 1px 0 0 rgba(255, 255, 255, 0.3);
 		transition:
-			translate 0.35s ease-out,
 			width 0.35s ease-out,
 			height 0.35s ease-out,
 			box-shadow 0.25s ease;
