@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { css } from "styled-system/css";
-	import { selectControl, tooltip } from "styled-system/recipes";
 	import { Portal } from "@ark-ui/svelte/portal";
 	import { Select, createListCollection } from "@ark-ui/svelte/select";
 	import { Tooltip } from "@ark-ui/svelte/tooltip";
+
+	import { css } from "styled-system/css";
+	import { selectControl, tooltip } from "styled-system/recipes";
+
 	import HelpTip from "./HelpTip.svelte";
 
 	type Option = { label: string; value: string; icon?: string; hint?: string };
@@ -78,10 +80,7 @@
 								>
 									<Tooltip.Trigger>
 										{#snippet asChild(triggerProps)}
-											<div
-												class={classes.itemInner}
-												{...triggerProps() as Record<string, unknown>}
-											>
+											<div class={classes.itemInner} {...triggerProps() as Record<string, unknown>}>
 												{@render itemBody(item)}
 											</div>
 										{/snippet}
@@ -135,10 +134,11 @@
 		transform: rotate(180deg);
 	}
 
-	/* Content open/close animation */
+	/* Content open/close animation. Vertical slide + fade only — no scale, so the
+	   popup's edges (and their shadow) never move laterally and the caret stays put. */
 	:global([data-scope="select"][data-part="content"][data-state="open"]) {
 		opacity: 1;
-		transform: translateY(0) scale(1);
+		transform: translateY(0);
 		transition:
 			opacity 0.15s ease,
 			transform 0.15s ease;
@@ -147,16 +147,27 @@
 	@starting-style {
 		:global([data-scope="select"][data-part="content"][data-state="open"]) {
 			opacity: 0;
-			transform: translateY(-6px) scale(0.96);
+			transform: translateY(-6px);
 		}
 	}
 
 	:global([data-scope="select"][data-part="content"][data-state="closed"]) {
 		opacity: 0;
-		transform: translateY(-4px) scale(0.98);
+		transform: translateY(-4px);
 		transition:
 			opacity 0.12s ease,
 			transform 0.12s ease;
+	}
+
+	/* Caret darkens in step with the top row when it's highlighted, matching the
+	   row's rgba(0,0,0,0.05) hover overlay (~brightness 0.95). */
+	:global(
+			[data-scope="select"][data-part="content"]:has(
+					[data-part="item"]:first-child[data-highlighted]
+				)
+		)
+		~ .select-caret {
+		filter: brightness(0.95);
 	}
 
 	/* Caret synced to content state via sibling selector */
@@ -168,8 +179,7 @@
 			transform 0.12s ease;
 	}
 
-	:global([data-scope="select"][data-part="content"][data-state="open"])
-		~ .select-caret {
+	:global([data-scope="select"][data-part="content"][data-state="open"]) ~ .select-caret {
 		opacity: 1;
 		transform: translateY(0);
 		transition:
@@ -178,8 +188,7 @@
 	}
 
 	@starting-style {
-		:global([data-scope="select"][data-part="content"][data-state="open"])
-			~ .select-caret {
+		:global([data-scope="select"][data-part="content"][data-state="open"]) ~ .select-caret {
 			opacity: 0;
 			transform: translateY(-6px);
 		}
