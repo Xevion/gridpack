@@ -253,11 +253,28 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			key: "sortStrategy",
 			label: "Sort Strategy",
 			default: "area-desc",
+			help: "Order images are placed in. Packing larger images first usually leaves fewer gaps.",
 			options: [
-				{ label: "Area (largest first)", value: "area-desc" },
-				{ label: "Height (tallest first)", value: "height-desc" },
-				{ label: "Width (widest first)", value: "width-desc" },
-				{ label: "Aspect (extreme first)", value: "aspect-desc" },
+				{
+					label: "Area (largest first)",
+					value: "area-desc",
+					hint: "Places images from largest area to smallest — usually the tightest pack.",
+				},
+				{
+					label: "Height (tallest first)",
+					value: "height-desc",
+					hint: "Tallest images first; helps when heights vary a lot.",
+				},
+				{
+					label: "Width (widest first)",
+					value: "width-desc",
+					hint: "Widest images first.",
+				},
+				{
+					label: "Aspect (extreme first)",
+					value: "aspect-desc",
+					hint: "Most extreme shapes (very wide or very tall) placed first.",
+				},
 			],
 		},
 		{
@@ -265,22 +282,40 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			key: "placement",
 			label: "Placement",
 			default: "best-short-side",
+			help: "Heuristic for choosing which free gap each image drops into when several would fit.",
 			options: [
-				{ label: "Best Short Side", value: "best-short-side" },
-				{ label: "Best Long Side", value: "best-long-side" },
-				{ label: "Best Area", value: "best-area" },
-				{ label: "Bottom-Left", value: "bottom-left" },
+				{
+					label: "Best Short Side",
+					value: "best-short-side",
+					hint: "Drops each image into the gap that leaves the smallest leftover on its shorter side.",
+				},
+				{
+					label: "Best Long Side",
+					value: "best-long-side",
+					hint: "Minimizes leftover space along the longer side of the gap.",
+				},
+				{
+					label: "Best Area",
+					value: "best-area",
+					hint: "Chooses the gap that wastes the least total area.",
+				},
+				{
+					label: "Bottom-Left",
+					value: "bottom-left",
+					hint: "Always slots images as far down and left as they fit — simple and predictable.",
+				},
 			],
 		},
 		{
 			type: "slider",
 			key: "fill",
-			label: "Fill %",
+			label: "Fill",
 			default: 78,
 			min: 50,
 			max: 100,
 			step: 2,
 			wide: true,
+			unit: "%",
 		},
 		{
 			type: "slider",
@@ -291,6 +326,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			max: 100,
 			step: 5,
 			wide: true,
+			unit: "%",
 		},
 		{
 			type: "slider",
@@ -301,6 +337,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			max: 100,
 			step: 5,
 			wide: true,
+			unit: "%",
 		},
 	],
 	layout(

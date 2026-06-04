@@ -25,12 +25,14 @@ export const justifiedEngine = defineEngine<JustifiedParams>({
 			max: 400,
 			step: 10,
 			wide: true,
+			unit: "px",
 		},
 		{
 			type: "select",
 			key: "lastRow",
 			label: "Last Row",
 			default: "justify",
+			help: "How the final, incomplete row is handled. Justify stretches it to full width; Left and Center keep images at their natural height.",
 			options: [
 				{ label: "Justify", value: "justify" },
 				{ label: "Left", value: "left" },

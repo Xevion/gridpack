@@ -83,15 +83,25 @@ export const linearPartitionEngine = defineEngine<LinearPartitionParams>({
 			max: 400,
 			step: 10,
 			wide: true,
+			unit: "px",
 		},
 		{
 			type: "select",
 			key: "costFunction",
 			label: "Cost Function",
 			default: "variance",
+			help: "What the partitioner minimizes when balancing rows. Variance evens out all rows; Max Deviation targets the single worst row.",
 			options: [
-				{ label: "Variance", value: "variance" },
-				{ label: "Max Deviation", value: "max-deviation" },
+				{
+					label: "Variance",
+					value: "variance",
+					hint: "Balances every row's height around the average.",
+				},
+				{
+					label: "Max Deviation",
+					value: "max-deviation",
+					hint: "Focuses on shrinking the single most off-target row.",
+				},
 			],
 		},
 	],

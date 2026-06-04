@@ -225,6 +225,7 @@ const selectControlRecipe = defineSlotRecipe({
 		"caret",
 		"content",
 		"item",
+		"itemInner",
 		"itemIcon",
 		"itemText",
 		"itemIndicator",
@@ -312,10 +313,6 @@ const selectControlRecipe = defineSlotRecipe({
 			transformOrigin: "top",
 		},
 		item: {
-			display: "flex",
-			alignItems: "center",
-			gap: "6px",
-			padding: "5px 10px",
 			fontSize: "11px",
 			fontWeight: "600",
 			color: "ink.mid",
@@ -338,6 +335,16 @@ const selectControlRecipe = defineSlotRecipe({
 				color: "accent",
 				fontWeight: "700",
 			},
+		},
+		// Flex row lives on an inner element so an optional per-item Tooltip
+		// trigger can own it (via asChild) without its data-state/id colliding
+		// with the Select.Item's selection attributes.
+		itemInner: {
+			display: "flex",
+			alignItems: "center",
+			gap: "6px",
+			padding: "5px 10px",
+			color: "inherit",
 		},
 		itemIcon: {
 			display: "flex",
@@ -370,13 +377,12 @@ const switchControlRecipe = defineSlotRecipe({
 	slots: ["root", "control", "thumb", "label"],
 	base: {
 		root: {
-			display: "inline-flex",
-			alignItems: "center",
-			gap: "6px",
+			display: "flex",
+			flexDirection: "column",
+			alignItems: "flex-start",
 		},
 		label: {
 			...controlLabelStyle,
-			marginBottom: "0",
 			cursor: "pointer",
 		},
 		control: {
@@ -423,6 +429,8 @@ const sliderRecipe = defineSlotRecipe({
 		"header",
 		"label",
 		"valueText",
+		"valueNumber",
+		"valueUnit",
 		"control",
 		"track",
 		"range",
@@ -436,12 +444,27 @@ const sliderRecipe = defineSlotRecipe({
 			alignItems: "baseline",
 		},
 		label: controlLabelStyle,
-		valueText: controlValueStyle,
+		valueText: {
+			...controlValueStyle,
+			display: "inline-flex",
+			alignItems: "baseline",
+		},
+		valueNumber: {
+			color: "ink.mid",
+		},
+		valueUnit: {
+			color: "ink.soft",
+			fontWeight: "500",
+			marginLeft: "0.14em",
+			'&[data-spaced="true"]': {
+				marginLeft: "0.32em",
+			},
+		},
 		control: {
 			position: "relative",
 			display: "flex",
 			alignItems: "center",
-			height: "20px",
+			height: "28px",
 		},
 		track: {
 			...insetGroove,
@@ -548,6 +571,61 @@ const numberInputRecipe = defineSlotRecipe({
 					"inset 1px 0 0 rgba(0, 0, 0, 0.12), inset -1px 0 0 rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.18), inset 0 0 0 1px {colors.accent.ring}",
 			},
 		},
+	},
+});
+
+const tooltipRecipe = defineSlotRecipe({
+	className: "tooltip",
+	slots: ["trigger", "content", "arrow", "arrowTip"],
+	base: {
+		trigger: {
+			display: "inline-flex",
+			alignItems: "center",
+			justifyContent: "center",
+			width: "13px",
+			height: "13px",
+			padding: "0",
+			margin: "0",
+			border: "none",
+			background: "transparent",
+			color: "ink.muted",
+			cursor: "help",
+			flexShrink: "0",
+			opacity: "0.7",
+			transition: "color 0.15s ease, opacity 0.15s ease",
+			_hover: {
+				color: "ink.mid",
+				opacity: "1",
+			},
+			_focusVisible: {
+				outline: "2px solid {colors.accent.focus}",
+				outlineOffset: "1px",
+				borderRadius: "9999px",
+				opacity: "1",
+			},
+		},
+		content: {
+			maxWidth: "240px",
+			padding: "7px 11px",
+			borderRadius: "5px",
+			fontSize: "12px",
+			fontWeight: "500",
+			lineHeight: "1.45",
+			letterSpacing: "0",
+			textTransform: "none",
+			textShadow: "none",
+			color: "parchment.light",
+			background: "linear-gradient(to bottom, {colors.ink.mid}, {colors.ink})",
+			boxShadow:
+				"0 5px 16px rgba(0, 0, 0, 0.32), 0 1px 3px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+			zIndex: "60",
+			transformOrigin: "var(--transform-origin)",
+		},
+		arrow: {
+			"--arrow-size": "8px",
+			"--arrow-background": "{colors.ink}",
+		},
+		arrowTip: {},
 	},
 });
 
@@ -682,6 +760,7 @@ export default defineConfig({
 				switchControl: switchControlRecipe,
 				slider: sliderRecipe,
 				numberInput: numberInputRecipe,
+				tooltip: tooltipRecipe,
 			},
 		},
 	},

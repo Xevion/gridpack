@@ -75,10 +75,23 @@ export const masonryEngine = defineEngine<MasonryParams>({
 			key: "assignment",
 			label: "Assignment",
 			default: "shortest-column",
+			help: "How each image picks a column. Shortest Column keeps heights even, Round Robin cycles in order, Balanced optimizes the overall fill.",
 			options: [
-				{ label: "Shortest Column", value: "shortest-column" },
-				{ label: "Round Robin", value: "round-robin" },
-				{ label: "Balanced", value: "balanced" },
+				{
+					label: "Shortest Column",
+					value: "shortest-column",
+					hint: "Adds each image to whichever column is currently shortest, keeping heights even.",
+				},
+				{
+					label: "Round Robin",
+					value: "round-robin",
+					hint: "Fills columns in a fixed left-to-right rotation, ignoring their heights.",
+				},
+				{
+					label: "Balanced",
+					value: "balanced",
+					hint: "Looks ahead to minimize the final height difference between columns.",
+				},
 			],
 		},
 	],

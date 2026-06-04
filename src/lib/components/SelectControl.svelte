@@ -1,21 +1,30 @@
 <script lang="ts">
-	import { selectControl } from "styled-system/recipes";
+	import { css } from "styled-system/css";
+	import { selectControl, tooltip } from "styled-system/recipes";
 	import { Portal } from "@ark-ui/svelte/portal";
 	import { Select, createListCollection } from "@ark-ui/svelte/select";
+	import { Tooltip } from "@ark-ui/svelte/tooltip";
+	import HelpTip from "./HelpTip.svelte";
+
+	type Option = { label: string; value: string; icon?: string; hint?: string };
 
 	let {
 		label,
 		value = $bindable(),
 		options,
+		help,
 		onValueChange: onValueChangeProp,
 	}: {
 		label: string;
 		value: string;
-		options: { label: string; value: string; icon?: string }[];
+		options: Option[];
+		help?: string;
 		onValueChange?: (value: string) => void;
 	} = $props();
 
 	const classes = selectControl();
+	const tip = tooltip();
+	const labelInner = css({ display: "inline-flex", alignItems: "center", gap: "3px" });
 	let collection = $derived(createListCollection({ items: options }));
 
 	let internalValue = $derived([value]);
@@ -30,7 +39,13 @@
 
 <div class={classes.root}>
 	<Select.Root {collection} value={internalValue} onValueChange={handleValueChange}>
-		<Select.Label class={classes.label}>{label}</Select.Label>
+		<Select.Label class={classes.label}>
+			{#if help}
+				<span class={labelInner}>{label}<HelpTip text={help} /></span>
+			{:else}
+				{label}
+			{/if}
+		</Select.Label>
 		<Select.Control>
 			<Select.Trigger class={classes.trigger}>
 				<Select.ValueText placeholder="Select" />
@@ -55,15 +70,38 @@
 				<Select.Content class={classes.content}>
 					{#each collection.items as item}
 						<Select.Item class={classes.item} {item}>
-							{#if item.icon}
-								<span class={classes.itemIcon}>{@html item.icon}</span>
+							{#if item.hint}
+								<Tooltip.Root
+									openDelay={300}
+									closeDelay={60}
+									positioning={{ placement: "left", gutter: 10 }}
+								>
+									<Tooltip.Trigger>
+										{#snippet asChild(triggerProps)}
+											<div
+												class={classes.itemInner}
+												{...triggerProps() as Record<string, unknown>}
+											>
+												{@render itemBody(item)}
+											</div>
+										{/snippet}
+									</Tooltip.Trigger>
+									<Portal>
+										<Tooltip.Positioner>
+											<Tooltip.Content class={tip.content}>
+												<Tooltip.Arrow class={tip.arrow}>
+													<Tooltip.ArrowTip class={tip.arrowTip} />
+												</Tooltip.Arrow>
+												{item.hint}
+											</Tooltip.Content>
+										</Tooltip.Positioner>
+									</Portal>
+								</Tooltip.Root>
+							{:else}
+								<div class={classes.itemInner}>
+									{@render itemBody(item)}
+								</div>
 							{/if}
-							<Select.ItemText class={classes.itemText}>{item.label}</Select.ItemText>
-							<Select.ItemIndicator class={classes.itemIndicator}>
-								<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-									<path d="M10.2 2.4L4.5 8.8 1.8 6l1.1-1.1 1.6 1.7L9 2.4z" />
-								</svg>
-							</Select.ItemIndicator>
 						</Select.Item>
 					{/each}
 				</Select.Content>
@@ -79,6 +117,18 @@
 		<Select.HiddenSelect />
 	</Select.Root>
 </div>
+
+{#snippet itemBody(item: Option)}
+	{#if item.icon}
+		<span class={classes.itemIcon}>{@html item.icon}</span>
+	{/if}
+	<Select.ItemText class={classes.itemText}>{item.label}</Select.ItemText>
+	<Select.ItemIndicator class={classes.itemIndicator}>
+		<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+			<path d="M10.2 2.4L4.5 8.8 1.8 6l1.1-1.1 1.6 1.7L9 2.4z" />
+		</svg>
+	</Select.ItemIndicator>
+{/snippet}
 
 <style>
 	:global([data-state="open"]) .select-arrow {

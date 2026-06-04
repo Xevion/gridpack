@@ -10,6 +10,10 @@ export type SliderControl = {
 	max: number;
 	step: number;
 	wide?: boolean;
+	/** Unit appended to the displayed value, e.g. "px", "%", "×". */
+	unit?: string;
+	/** Optional help text surfaced through a tooltip on the label. */
+	help?: string;
 };
 
 export type NumberControl = {
@@ -19,6 +23,7 @@ export type NumberControl = {
 	default: number;
 	min: number;
 	max: number;
+	help?: string;
 };
 
 export type SelectControl = {
@@ -26,7 +31,8 @@ export type SelectControl = {
 	key: string;
 	label: string;
 	default: string;
-	options: { label: string; value: string; icon?: string }[];
+	options: { label: string; value: string; icon?: string; hint?: string }[];
+	help?: string;
 };
 
 export type SwitchControl = {
@@ -34,6 +40,7 @@ export type SwitchControl = {
 	key: string;
 	label: string;
 	default: boolean;
+	help?: string;
 };
 
 export type ControlDescriptor =

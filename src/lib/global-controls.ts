@@ -25,12 +25,14 @@ export const globalControls: ControlDescriptor[] = [
 		max: 16,
 		step: 1,
 		wide: true,
+		unit: "px",
 	},
 	{
 		type: "select",
 		key: "fit",
 		label: "Fit Mode",
 		default: "cover",
+		help: "How each image fills its cell. Cover crops to fill, Contain fits the whole image with letterboxing, Stretch distorts it to fit.",
 		options: [
 			{
 				label: "Cover",

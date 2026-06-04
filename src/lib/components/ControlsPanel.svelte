@@ -9,7 +9,7 @@ let { children }: { children: Snippet } = $props();
 	display: 'flex',
 	flexWrap: 'wrap',
 	gap: '4',
-	alignItems: 'flex-end',
+	alignItems: 'flex-start',
 	px: '4',
 	py: '3',
 	mb: '6',

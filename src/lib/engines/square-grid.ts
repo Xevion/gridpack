@@ -74,11 +74,13 @@ export const squareGridEngine = defineEngine<SquareGridParams>({
 			max: 400,
 			step: 10,
 			wide: true,
+			unit: "px",
 		},
 		{
 			type: "select",
 			key: "cellAspectRatio",
 			label: "Cell Ratio",
+			help: "Width-to-height proportion of every grid cell. Images are cropped to fit this fixed shape.",
 			default: "1:1",
 			options: [
 				{ label: "1:1", value: "1:1" },

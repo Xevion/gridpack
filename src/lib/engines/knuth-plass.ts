@@ -91,6 +91,7 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			max: 400,
 			step: 10,
 			wide: true,
+			unit: "px",
 		},
 		{
 			type: "slider",
@@ -101,6 +102,8 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			max: 2,
 			step: 0.1,
 			wide: true,
+			unit: "×",
+			help: "How far row heights may stray from the target to find better break points. Higher allows more variation in exchange for tighter, more even packing.",
 		},
 		{
 			type: "slider",
@@ -110,6 +113,8 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			min: 0,
 			max: 100,
 			step: 5,
+			unit: "%",
+			help: "Discourages leaving a single image alone on the last row. Higher values pull more images down to keep it company.",
 		},
 	],
 	layout(

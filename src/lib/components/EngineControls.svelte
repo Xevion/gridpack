@@ -26,6 +26,8 @@ let {
 			max={ctrl.max}
 			step={ctrl.step}
 			wide={ctrl.wide ?? false}
+			unit={ctrl.unit}
+			help={ctrl.help}
 			onValueChange={(detail) => onchange(ctrl.key, detail.value[0])}
 		/>
 	{:else if ctrl.type === 'number'}
@@ -35,6 +37,7 @@ let {
 			value={val}
 			min={ctrl.min}
 			max={ctrl.max}
+			help={ctrl.help}
 			onValueChange={(detail) => {
 				const v = parseFloat(detail.value);
 				if (!isNaN(v)) onchange(ctrl.key, v);
@@ -46,6 +49,7 @@ let {
 			label={ctrl.label}
 			value={val}
 			options={ctrl.options}
+			help={ctrl.help}
 			onValueChange={(value) => onchange(ctrl.key, value)}
 		/>
 	{:else if ctrl.type === 'switch'}
@@ -53,6 +57,7 @@ let {
 		<SwitchControl
 			label={ctrl.label}
 			checked={val}
+			help={ctrl.help}
 			onCheckedChange={(checked) => onchange(ctrl.key, checked)}
 		/>
 	{/if}

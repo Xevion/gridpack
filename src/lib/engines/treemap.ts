@@ -97,10 +97,23 @@ export const treemapEngine = defineEngine<TreemapParams>({
 			key: "weightBy",
 			label: "Weight By",
 			default: "equal",
+			help: "What determines each tile's area. Equal gives every image the same size; Aspect Ratio and Random weight tiles by shape or chance.",
 			options: [
-				{ label: "Equal", value: "equal" },
-				{ label: "Aspect Ratio", value: "aspect-ratio" },
-				{ label: "Random", value: "random" },
+				{
+					label: "Equal",
+					value: "equal",
+					hint: "Every image gets the same tile area.",
+				},
+				{
+					label: "Aspect Ratio",
+					value: "aspect-ratio",
+					hint: "Wider images claim proportionally more area.",
+				},
+				{
+					label: "Random",
+					value: "random",
+					hint: "Tile areas are assigned randomly for an organic, uneven mosaic.",
+				},
 			],
 		},
 		{
@@ -108,6 +121,7 @@ export const treemapEngine = defineEngine<TreemapParams>({
 			key: "squarify",
 			label: "Squarify",
 			default: true,
+			help: "Favors near-square tiles over long thin slivers, trading exact area accuracy for more usable image shapes.",
 		},
 		{
 			type: "slider",
@@ -117,6 +131,7 @@ export const treemapEngine = defineEngine<TreemapParams>({
 			min: 0,
 			max: 8,
 			step: 1,
+			unit: "px",
 		},
 	],
 	layout(
