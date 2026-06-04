@@ -84,6 +84,7 @@ export const linearPartitionEngine = defineEngine<LinearPartitionParams>({
 			step: 10,
 			wide: true,
 			unit: "px",
+			help: "Target height each row aims for. The partitioner balances rows around this value while scaling images to fill the container width.",
 		},
 		{
 			type: "select",

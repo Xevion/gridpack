@@ -92,6 +92,7 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			step: 10,
 			wide: true,
 			unit: "px",
+			help: "Target height each row aims for. The line-breaker fits images to the container width, so actual row heights vary around this value.",
 		},
 		{
 			type: "slider",
@@ -103,7 +104,7 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			step: 0.1,
 			wide: true,
 			unit: "×",
-			help: "How far row heights may stray from the target to find better break points. Higher allows more variation in exchange for tighter, more even packing.",
+			help: "How far row heights may stray from the target when choosing where to break rows. Higher tolerates more height variation but reliably fills each row to full width; lower forces uniform rows but can leave awkward gaps.",
 		},
 		{
 			type: "slider",

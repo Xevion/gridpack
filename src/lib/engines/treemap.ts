@@ -132,6 +132,7 @@ export const treemapEngine = defineEngine<TreemapParams>({
 			max: 8,
 			step: 1,
 			unit: "px",
+			help: "Space inset around every tile. Larger values open up the layout but can shrink the smallest tiles until they vanish.",
 		},
 	],
 	layout(

@@ -316,6 +316,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			step: 2,
 			wide: true,
 			unit: "%",
+			help: "Share of the container the images aim to cover before gaps are filled. Lower leaves more slack at their target size; higher packs more in, shrinking later images.",
 		},
 		{
 			type: "slider",
@@ -327,6 +328,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			step: 5,
 			wide: true,
 			unit: "%",
+			help: "Spreads image sizes around the average to create visual hierarchy. At 0 every image targets the same area; higher values make some noticeably larger than others.",
 		},
 		{
 			type: "slider",
@@ -338,6 +340,7 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 			step: 5,
 			wide: true,
 			unit: "%",
+			help: "How far placed images grow to absorb leftover space. At 0 they keep their aspect ratio with visible gaps; at 100 the container is fully tiled and shapes bend (hidden as cropping under Cover fit).",
 		},
 	],
 	layout(

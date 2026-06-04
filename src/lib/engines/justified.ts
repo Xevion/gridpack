@@ -26,6 +26,7 @@ export const justifiedEngine = defineEngine<JustifiedParams>({
 			step: 10,
 			wide: true,
 			unit: "px",
+			help: "Target height each row aims for. Images are scaled to fill the container width, so actual row heights vary around this value.",
 		},
 		{
 			type: "select",
