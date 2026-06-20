@@ -1,22 +1,61 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["config:recommended", ":semanticCommits", ":semanticCommitScope(deps)"],
+	"extends": [
+		"config:recommended",
+		":semanticCommits",
+		":semanticCommitScope(deps)",
+		":dependencyDashboard",
+		":prHourlyLimit2"
+	],
 	"schedule": ["before 6am on monday"],
 	"labels": ["dependencies"],
+	"rangeStrategy": "bump",
 	"lockFileMaintenance": {
 		"enabled": true,
 		"schedule": ["before 6am on monday"]
 	},
 	"packageRules": [
 		{
-			"description": "Group non-major updates into a single PR",
-			"matchUpdateTypes": ["minor", "patch"],
-			"groupName": "non-major dependencies"
+			"description": "Update the peer-coupled SvelteKit/Vite toolchain together, including majors",
+			"groupName": "sveltekit/vite toolchain",
+			"matchPackageNames": ["svelte", "svelte-check", "@sveltejs/**", "vite"],
+			"separateMajorMinor": false
 		},
 		{
-			"description": "Keep the bun toolchain pin in sync with mise/CI",
-			"matchPackageNames": ["oven-sh/setup-bun"],
-			"groupName": "github actions"
+			"description": "Group Panda CSS (codegen output must stay in lockstep)",
+			"groupName": "panda css",
+			"matchPackageNames": ["@pandacss/**"]
+		},
+		{
+			"description": "Group Ark UI headless components",
+			"groupName": "ark-ui",
+			"matchPackageNames": ["@ark-ui/**"]
+		},
+		{
+			"description": "Group the ESLint stack",
+			"groupName": "eslint",
+			"matchPackageNames": ["eslint", "@eslint/**", "eslint-plugin-**", "typescript-eslint"]
+		},
+		{
+			"description": "Group commitlint",
+			"groupName": "commitlint",
+			"matchPackageNames": ["@commitlint/**"]
+		},
+		{
+			"description": "Group fontsource packages",
+			"groupName": "fontsource",
+			"matchPackageNames": ["@fontsource/**", "@fontsource-variable/**"]
+		},
+		{
+			"description": "Group and pin GitHub Actions",
+			"groupName": "github actions",
+			"matchManagers": ["github-actions"],
+			"pinDigests": true
+		},
+		{
+			"description": "Roll up the remaining non-major updates into one PR",
+			"groupName": "non-major dependencies",
+			"matchUpdateTypes": ["minor", "patch"]
 		}
 	]
 }
