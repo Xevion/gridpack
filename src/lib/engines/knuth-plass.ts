@@ -28,17 +28,23 @@ type KnuthPlassParams = {
  *     very different heights
  *
  * ## Complexity
- * O(n²) worst case, but in practice much faster because feasible breakpoints
- * are limited by the looseness parameter. With tight looseness, each item only
- * "sees" a small window of potential break positions, giving near-linear performance.
+ * O(n²) worst case, but in practice much faster: a row only ever gets shorter as
+ * images are added, so each breakpoint stops scanning once the row falls far
+ * enough below target, and each item sees a small window of break positions.
  *
  * ## Parameters
  * - **targetRowHeight**: The ideal row height. The algorithm tries to get every
  *   row as close to this as possible.
- * - **looseness**: Tolerance for deviation from target height, on a 0-2 scale.
- *   0 = very tight (rows must be very close to target, may fail to find a
- *   valid layout for some inputs). 1 = balanced. 2 = very loose (allows
- *   significant height variation, always finds a valid layout).
+ * - **looseness**: Weighs height uniformity against row count, on a 0-2 scale.
+ *   0 keeps every row as near the target as the images allow; 2 accepts rows well
+ *   off target in exchange for packing the gallery into fewer of them.
+ *   It scales the badness weight rather than filtering which rows are admissible:
+ *   a filter stops binding once it admits every row the demerits would have picked
+ *   anyway, which would leave the upper half of the dial inert.
+ *   Because demerits are `(1 + badness)²`, it is the weight's ratio to that
+ *   constant 1 that matters, so the dial sweeps it geometrically. Below a point
+ *   the tight end flattens out: uniformity already dominates and the partition is
+ *   optimal, so tightening further cannot improve it.
  * - **orphanPenalty**: Extra demerits for a last row with very few items.
  *   Higher values force the algorithm to "steal" items from the second-to-last
  *   row to fill the last row, at the cost of slightly worse overall balance.
@@ -55,8 +61,8 @@ type KnuthPlassParams = {
  * ## Weaknesses
  * - Most complex algorithm to implement correctly.
  * - O(n²) can be slow for very large galleries (1000+ images).
- * - With tight looseness on adversarial inputs, may fail to find any valid
- *   layout (need fallback to greedy).
+ * - The tight end of the looseness range is nearly flat, since the most uniform
+ *   partition is reached well before the dial bottoms out.
  * - Overkill for small galleries where greedy justified already looks fine.
  * - The visual improvement is most noticeable in the last few rows —
  *   middle rows tend to look similar to greedy regardless.
@@ -64,13 +70,13 @@ type KnuthPlassParams = {
  * ## Implementation Approach
  * 1. For each item i, compute its "natural width" = aspectRatio × targetRowHeight.
  * 2. Build prefix sums of natural widths.
- * 3. For each potential breakpoint i, scan forward to find all feasible end
- *    breakpoints j where a row from i to j fits within the looseness tolerance:
- *    rowWidth = sum(naturalWidths[i..j]) + (j-i) * gap
- *    adjustmentRatio = (containerWidth - rowWidth) / (targetRowHeight * sum(aspectRatios[i..j]))
- *    If |adjustmentRatio| <= looseness, the break is feasible.
- * 4. Compute demerits for each feasible row:
- *    demerits = (1 + badness + penalty)² where badness = 100 * |adjustmentRatio|³
+ * 3. For each potential breakpoint i, scan forward over end breakpoints j, where a
+ *    row from i to j has
+ *    adjustmentRatio = (fittedRowHeight(i..j) - targetRowHeight) / targetRowHeight
+ *    Stop extending once the row falls below MAX_SHRINK of the target. The
+ *    single-image row is always added first, so a path to the end always exists.
+ * 4. Compute demerits for each row:
+ *    demerits = (1 + badness + penalty)² where badness = weight(looseness) × |adjustmentRatio|³
  * 5. Use Dijkstra-like shortest path from breakpoint 0 to breakpoint n.
  * 6. Backtrack to recover the optimal set of row breaks.
  * 7. Render each row: rowHeight = containerWidth / sum(aspectRatios_in_row) adjusted for gaps.
@@ -79,6 +85,15 @@ type KnuthPlassParams = {
 const ORPHAN_MIN = 3;
 /** How far below target a row may fall before longer rows stop being considered. */
 const MAX_SHRINK = 0.75;
+/**
+ * Badness weight at each end of the looseness dial. Demerits are
+ * `(1 + weight * |r|^3)^2`, so it is the weight *relative to that constant 1*
+ * that decides whether uniform rows or few rows win. A typical row deviates by
+ * |r| ~ 0.2, which this range carries from "deviation dwarfs the row count" to
+ * "deviation is nearly free", keeping the whole slider live.
+ */
+const BADNESS_WEIGHT_TIGHT = 300;
+const BADNESS_WEIGHT_LOOSE = 2;
 
 export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 	id: "knuth-plass",
@@ -107,7 +122,7 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			step: 0.1,
 			wide: true,
 			unit: "×",
-			help: "How far row heights may stray from the target when choosing where to break rows. Higher tolerates more height variation but reliably fills each row to full width; lower forces uniform rows but can leave awkward gaps.",
+			help: "Trades row-height uniformity against row count. Lower keeps every row near the target height; higher accepts rows well off target to pack the gallery into fewer of them.",
 		},
 		{
 			type: "slider",
@@ -143,10 +158,19 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 			return (h - targetRowHeight) / targetRowHeight;
 		};
 
+		// Looseness weighs height uniformity against row count, rather than gating
+		// which rows are admissible. A gate stops binding once it admits every row the
+		// demerits would have picked anyway, which leaves the upper half of the dial
+		// inert. The weight is swept geometrically because only its ratio to the
+		// constant 1 matters, and it always leaves a path to the end.
+		const span = Math.min(1, Math.max(0, looseness / 2));
+		const badnessWeight =
+			BADNESS_WEIGHT_TIGHT * (BADNESS_WEIGHT_LOOSE / BADNESS_WEIGHT_TIGHT) ** span;
+
 		const demerits = (a: number, b: number, r: number): number => {
 			// Knuth's cubic badness: mild stretches cost almost nothing, and the price
 			// climbs steeply enough that one very wrong row loses to several mediocre ones.
-			const badness = 100 * Math.abs(r) ** 3;
+			const badness = badnessWeight * Math.abs(r) ** 3;
 			const count = b - a + 1;
 			// Only the final row can be orphaned, and the penalty scales with how short
 			// it is, so raising the dial pulls images down to keep it company.
@@ -161,42 +185,20 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 		for (let i = 0; i < n; i++) {
 			if (dp[i] === Infinity) continue;
 
-			// A node with no in-tolerance successor still needs one edge, otherwise a
-			// tight looseness would leave the graph disconnected and the layout empty.
-			// The closest-to-target row is kept in reserve for exactly that case.
-			let fallbackEnd = -1;
-			let fallbackR = Infinity;
-			let feasible = false;
-
 			for (let j = i; j < n; j++) {
 				const r = adjustment(i, j);
 				if (!Number.isFinite(r)) break;
 
-				if (Math.abs(r) < Math.abs(fallbackR)) {
-					fallbackR = r;
-					fallbackEnd = j;
-				}
-
-				if (Math.abs(r) <= looseness) {
-					feasible = true;
-					const cost = dp[i] + demerits(i, j, r);
-					if (cost < dp[j + 1]) {
-						dp[j + 1] = cost;
-						back[j + 1] = i;
-					}
+				const cost = dp[i] + demerits(i, j, r);
+				if (cost < dp[j + 1]) {
+					dp[j + 1] = cost;
+					back[j + 1] = i;
 				}
 
 				// Rows only ever get shorter as images are added, so once one is far
-				// below target every longer row is too: stop extending this node.
+				// below target every longer row is too: stop extending this node. The
+				// single-image row is always added first, so a path to the end survives.
 				if (r < -MAX_SHRINK) break;
-			}
-
-			if (!feasible && fallbackEnd >= 0) {
-				const cost = dp[i] + demerits(i, fallbackEnd, fallbackR);
-				if (cost < dp[fallbackEnd + 1]) {
-					dp[fallbackEnd + 1] = cost;
-					back[fallbackEnd + 1] = i;
-				}
 			}
 		}
 
