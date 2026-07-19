@@ -94,6 +94,13 @@ export interface LayoutEngine<P = Record<string, unknown>> {
 	name: string;
 	containerMode: ContainerMode;
 	controls: ControlDescriptor[];
+	/**
+	 * Keys of *global* controls this engine makes no use of, so the host can drop
+	 * them from the panel. An engine that re-sorts its input internally, for
+	 * instance, renders the dataset `order` control inert; showing an input that
+	 * cannot change the output is worse than not offering it.
+	 */
+	ignores?: string[];
 	layout(items: LayoutItem[], container: ContainerDimensions, params: P, gap: number): LayoutResult;
 }
 
@@ -149,6 +156,7 @@ export function defineEngine<P extends Record<string, unknown>>(cfg: {
 	name: string;
 	containerMode: ContainerMode;
 	controls: ControlDescriptor[];
+	ignores?: string[];
 	layout(items: LayoutItem[], container: ContainerDimensions, params: P, gap: number): LayoutResult;
 }): LayoutEngine {
 	return {
@@ -156,39 +164,10 @@ export function defineEngine<P extends Record<string, unknown>>(cfg: {
 		name: cfg.name,
 		containerMode: cfg.containerMode,
 		controls: cfg.controls,
+		ignores: cfg.ignores,
 		layout(items, container, params, gap) {
 			const resolved = resolveParams(cfg.controls, params) as P;
 			return cfg.layout(items, container, resolved, gap);
 		},
 	};
-}
-
-/**
- * Simple grid fallback used by stub engines.
- * Lays out items in rows of equal-height cells, preserving aspect ratio.
- */
-export function stubLayout(
-	items: LayoutItem[],
-	containerWidth: number,
-	cellHeight: number,
-	gap: number,
-): LayoutResult {
-	const results: PositionedItem[] = [];
-	let x = 0;
-	let y = 0;
-	const rowHeight = cellHeight;
-
-	for (const item of items) {
-		const w = Math.round(cellHeight * item.aspectRatio);
-
-		if (x > 0 && x + w > containerWidth) {
-			x = 0;
-			y += rowHeight + gap;
-		}
-
-		results.push({ id: item.id, x, y, width: w, height: rowHeight });
-		x += w + gap;
-	}
-
-	return { items: results, totalHeight: y + rowHeight };
 }

@@ -32,6 +32,16 @@
 	let paramsByEngine = $state<Record<string, Record<string, unknown>>>({});
 	let engineParams = $derived(resolveParams(engine.controls, paramsByEngine[engineId] ?? {}));
 
+	// A control the active engine ignores is dropped from the panel rather than
+	// left interactive-but-inert. Its value survives in globalRaw, so switching
+	// back to an engine that honours it restores the prior setting.
+	let visibleDatasetControls = $derived(
+		datasetControls.filter((c) => !engine.ignores?.includes(c.key)),
+	);
+	let visibleRenderControls = $derived(
+		renderControls.filter((c) => !engine.ignores?.includes(c.key)),
+	);
+
 	let images = $derived(
 		generateImages({
 			count: globalParams.count,
@@ -87,12 +97,12 @@
 
 		<ControlsPanel>
 			<EngineControls
-				controls={datasetControls}
+				controls={visibleDatasetControls}
 				params={globalParams}
 				onchange={handleGlobalChange}
 			/>
 			<EngineControls
-				controls={renderControls}
+				controls={visibleRenderControls}
 				params={globalParams}
 				onchange={handleGlobalChange}
 			/>

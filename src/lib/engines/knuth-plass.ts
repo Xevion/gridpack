@@ -1,6 +1,7 @@
 import type { LayoutItem, ContainerDimensions, LayoutResult } from "./types";
 
-import { defineEngine, stubLayout } from "./types";
+import { fittedRowHeight, renderRows } from "./row-layout";
+import { defineEngine } from "./types";
 
 type KnuthPlassParams = {
 	targetRowHeight: number;
@@ -74,6 +75,11 @@ type KnuthPlassParams = {
  * 6. Backtrack to recover the optimal set of row breaks.
  * 7. Render each row: rowHeight = containerWidth / sum(aspectRatios_in_row) adjusted for gaps.
  */
+/** Row length below which the last row counts as orphaned. */
+const ORPHAN_MIN = 3;
+/** How far below target a row may fall before longer rows stop being considered. */
+const MAX_SHRINK = 0.75;
+
 export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 	id: "knuth-plass",
 	name: "Knuth-Plass",
@@ -118,9 +124,92 @@ export const knuthPlassEngine = defineEngine<KnuthPlassParams>({
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: KnuthPlassParams,
+		params: KnuthPlassParams,
 		gap: number,
 	): LayoutResult {
-		return stubLayout(items, container.width, 200, gap);
+		const { targetRowHeight, looseness, orphanPenalty } = params;
+		const W = container.width;
+		const n = items.length;
+
+		if (n === 0 || W <= 0) return { items: [], totalHeight: 0 };
+
+		const prefix = new Array<number>(n + 1).fill(0);
+		for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + items[i].aspectRatio;
+
+		/** Signed stretch of the row items a..b: 0 sits exactly on the target height. */
+		const adjustment = (a: number, b: number): number => {
+			const h = fittedRowHeight(prefix[b + 1] - prefix[a], b - a + 1, W, gap);
+			if (!Number.isFinite(h) || h <= 0) return Infinity;
+			return (h - targetRowHeight) / targetRowHeight;
+		};
+
+		const demerits = (a: number, b: number, r: number): number => {
+			// Knuth's cubic badness: mild stretches cost almost nothing, and the price
+			// climbs steeply enough that one very wrong row loses to several mediocre ones.
+			const badness = 100 * Math.abs(r) ** 3;
+			const count = b - a + 1;
+			// Only the final row can be orphaned, and the penalty scales with how short
+			// it is, so raising the dial pulls images down to keep it company.
+			const orphan = b === n - 1 && count < ORPHAN_MIN ? orphanPenalty * (ORPHAN_MIN - count) : 0;
+			return (1 + badness + orphan) ** 2;
+		};
+
+		const dp = new Array<number>(n + 1).fill(Infinity);
+		const back = new Array<number>(n + 1).fill(-1);
+		dp[0] = 0;
+
+		for (let i = 0; i < n; i++) {
+			if (dp[i] === Infinity) continue;
+
+			// A node with no in-tolerance successor still needs one edge, otherwise a
+			// tight looseness would leave the graph disconnected and the layout empty.
+			// The closest-to-target row is kept in reserve for exactly that case.
+			let fallbackEnd = -1;
+			let fallbackR = Infinity;
+			let feasible = false;
+
+			for (let j = i; j < n; j++) {
+				const r = adjustment(i, j);
+				if (!Number.isFinite(r)) break;
+
+				if (Math.abs(r) < Math.abs(fallbackR)) {
+					fallbackR = r;
+					fallbackEnd = j;
+				}
+
+				if (Math.abs(r) <= looseness) {
+					feasible = true;
+					const cost = dp[i] + demerits(i, j, r);
+					if (cost < dp[j + 1]) {
+						dp[j + 1] = cost;
+						back[j + 1] = i;
+					}
+				}
+
+				// Rows only ever get shorter as images are added, so once one is far
+				// below target every longer row is too: stop extending this node.
+				if (r < -MAX_SHRINK) break;
+			}
+
+			if (!feasible && fallbackEnd >= 0) {
+				const cost = dp[i] + demerits(i, fallbackEnd, fallbackR);
+				if (cost < dp[fallbackEnd + 1]) {
+					dp[fallbackEnd + 1] = cost;
+					back[fallbackEnd + 1] = i;
+				}
+			}
+		}
+
+		if (dp[n] === Infinity) return renderRows([items], W, gap);
+
+		const rows: LayoutItem[][] = [];
+		for (let end = n; end > 0; ) {
+			const start = back[end];
+			if (start < 0) return renderRows([items], W, gap);
+			rows.unshift(items.slice(start, end));
+			end = start;
+		}
+
+		return renderRows(rows, W, gap);
 	},
 });

@@ -45,7 +45,7 @@ export const datasetControls: ControlDescriptor[] = [
 		key: "order",
 		label: "Order",
 		default: "as-generated",
-		help: "Sequence images are fed to the layout. Order-preserving engines respond to this; engines that sort internally (Bin Pack, Treemap) ignore it.",
+		help: "Sequence images are fed to the layout. Engines that sort internally don't offer this control.",
 		options: [
 			{
 				label: "As Generated",

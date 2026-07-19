@@ -240,6 +240,9 @@ export const binPackingEngine = defineEngine<BinPackingParams>({
 	id: "bin-packing",
 	name: "Bin Pack",
 	containerMode: "fill",
+	// Placement order comes from the Sort Strategy control, which overrides the
+	// dataset order entirely.
+	ignores: ["order"],
 	controls: [
 		{
 			type: "select",

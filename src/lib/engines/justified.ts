@@ -122,6 +122,6 @@ export const justifiedEngine = defineEngine<JustifiedParams>({
 			commitLastRow(currentRow, aspectSum);
 		}
 
-		return { items: results, totalHeight: y - gap };
+		return { items: results, totalHeight: Math.max(0, y - gap) };
 	},
 });

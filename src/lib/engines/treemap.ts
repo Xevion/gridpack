@@ -1,12 +1,139 @@
 import type { LayoutItem, ContainerDimensions, PositionedItem, LayoutResult } from "./types";
 
+import { seededRandom } from "../images";
 import { defineEngine } from "./types";
 
 type TreemapParams = {
 	weightBy: "equal" | "aspect-ratio" | "random";
 	squarify: boolean;
-	padding: number;
 };
+
+interface Rect {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
+
+/** An image reduced to the only property subdivision cares about: its area. */
+interface Cell {
+	id: number;
+	area: number;
+}
+
+type PlacedCell = Rect & { id: number };
+
+/**
+ * Bruls' aspect-ratio objective for a candidate strip: the worst width-to-height
+ * ratio among its cells once `side` is divided between them. Lower is squarer,
+ * and the greedy loop stops extending a strip as soon as this starts rising.
+ */
+function worstRatio(row: Cell[], side: number): number {
+	if (row.length === 0) return Infinity;
+	let sum = 0;
+	let max = 0;
+	let min = Infinity;
+	for (const c of row) {
+		sum += c.area;
+		max = Math.max(max, c.area);
+		min = Math.min(min, c.area);
+	}
+	if (sum <= 0 || side <= 0 || min <= 0) return Infinity;
+	const s2 = sum * sum;
+	const w2 = side * side;
+	return Math.max((w2 * max) / s2, s2 / (w2 * min));
+}
+
+/**
+ * Squarified subdivision: repeatedly grow a strip along the rectangle's shorter
+ * edge while that improves the worst aspect ratio, emit it, and continue into
+ * the space left over.
+ */
+function squarifyCells(cells: Cell[], rect: Rect): PlacedCell[] {
+	const out: PlacedCell[] = [];
+	let remaining = cells;
+	let r = { ...rect };
+
+	while (remaining.length > 0 && r.w > 0 && r.h > 0) {
+		const side = Math.min(r.w, r.h);
+		const row: Cell[] = [remaining[0]];
+		let i = 1;
+		while (
+			i < remaining.length &&
+			worstRatio([...row, remaining[i]], side) <= worstRatio(row, side)
+		) {
+			row.push(remaining[i]);
+			i++;
+		}
+
+		const rowArea = row.reduce((s, c) => s + c.area, 0);
+		if (r.w <= r.h) {
+			const stripH = Math.min(r.h, rowArea / r.w);
+			let x = r.x;
+			for (const c of row) {
+				const w = stripH > 0 ? c.area / stripH : 0;
+				out.push({ id: c.id, x, y: r.y, w, h: stripH });
+				x += w;
+			}
+			r = { x: r.x, y: r.y + stripH, w: r.w, h: r.h - stripH };
+		} else {
+			const stripW = Math.min(r.w, rowArea / r.h);
+			let y = r.y;
+			for (const c of row) {
+				const h = stripW > 0 ? c.area / stripW : 0;
+				out.push({ id: c.id, x: r.x, y, w: stripW, h });
+				y += h;
+			}
+			r = { x: r.x + stripW, y: r.y, w: r.w - stripW, h: r.h };
+		}
+		remaining = remaining.slice(row.length);
+	}
+
+	// Any tail left by a degenerate rectangle still gets a (zero-area) slot so the
+	// caller's "every image is placed" contract holds; the inset clamp gives it 1px.
+	for (const c of remaining) {
+		out.push({ id: c.id, x: r.x, y: r.y, w: 0, h: 0 });
+	}
+	return out;
+}
+
+/**
+ * Slice-and-dice: bisect the cells by weight and the rectangle proportionally,
+ * alternating axis at each level. Faster and order-preserving, but the cells
+ * elongate as the recursion deepens.
+ */
+function sliceAndDice(cells: Cell[], rect: Rect, horizontal: boolean): PlacedCell[] {
+	if (cells.length === 0) return [];
+	if (cells.length === 1) {
+		return [{ id: cells[0].id, x: rect.x, y: rect.y, w: rect.w, h: rect.h }];
+	}
+
+	const total = cells.reduce((s, c) => s + c.area, 0);
+	let acc = 0;
+	let split = 1;
+	for (let i = 0; i < cells.length - 1; i++) {
+		acc += cells[i].area;
+		if (acc >= total / 2) {
+			split = i + 1;
+			break;
+		}
+		split = i + 2;
+	}
+
+	const head = cells.slice(0, split);
+	const tail = cells.slice(split);
+	const headArea = head.reduce((s, c) => s + c.area, 0);
+	const frac = total > 0 ? headArea / total : 0.5;
+
+	const a = horizontal
+		? { x: rect.x, y: rect.y, w: rect.w * frac, h: rect.h }
+		: { x: rect.x, y: rect.y, w: rect.w, h: rect.h * frac };
+	const b = horizontal
+		? { x: rect.x + a.w, y: rect.y, w: rect.w - a.w, h: rect.h }
+		: { x: rect.x, y: rect.y + a.h, w: rect.w, h: rect.h - a.h };
+
+	return [...sliceAndDice(head, a, !horizontal), ...sliceAndDice(tail, b, !horizontal)];
+}
 
 /**
  * Treemap (Squarified Recursive Subdivision) Layout Engine
@@ -60,7 +187,7 @@ type TreemapParams = {
  * - Not order-preserving — the sort step reorders images.
  * - Visual stability on input changes is poor — adding or removing one image
  *   can cause the entire layout to reflow.
- * - Padding between cells requires shrinking each cell inward, which can
+ * - Separation between cells requires shrinking each cell inward, which can
  *   make small cells disappear.
  *
  * ## Implementation Approach
@@ -80,13 +207,17 @@ type TreemapParams = {
  * 5. If squarify is false (slice-and-dice):
  *    a. Alternate between horizontal and vertical splits.
  *    b. At each level, split the rectangle proportionally by weight.
- * 6. Apply padding by insetting each cell's rectangle by padding/2 on each side.
+ * 6. Separate cells by insetting each rectangle by gap/2 on each side. Cells tile
+ *    the container exactly, so this inset is the only gap between neighbours and
+ *    the global gap control needs no treemap-specific padding alongside it.
  * 7. Return positioned items. totalHeight = containerHeight (fixed).
  */
 export const treemapEngine = defineEngine<TreemapParams>({
 	id: "treemap",
 	name: "Treemap",
 	containerMode: "fill",
+	// Cells are sorted by weight before subdivision, so the incoming order is lost.
+	ignores: ["order"],
 	controls: [
 		{
 			type: "select",
@@ -119,43 +250,63 @@ export const treemapEngine = defineEngine<TreemapParams>({
 			default: true,
 			help: "Favors near-square tiles over long thin slivers, trading exact area accuracy for more usable image shapes.",
 		},
-		{
-			type: "slider",
-			key: "padding",
-			label: "Padding",
-			default: 2,
-			min: 0,
-			max: 8,
-			step: 1,
-			unit: "px",
-			help: "Space inset around every tile. Larger values open up the layout but can shrink the smallest tiles until they vanish.",
-		},
 	],
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: TreemapParams,
+		params: TreemapParams,
 		gap: number,
 	): LayoutResult {
-		const containerHeight = container.height ?? 600;
+		const { weightBy, squarify } = params;
+		const H = container.height ?? 600;
+		const W = container.width;
 		const results: PositionedItem[] = [];
-		const cols = Math.ceil(Math.sqrt(items.length));
-		const rows = Math.ceil(items.length / cols);
-		const cellW = (container.width - (cols - 1) * gap) / cols;
-		const cellH = (containerHeight - (rows - 1) * gap) / rows;
 
-		for (let i = 0; i < items.length; i++) {
-			const col = i % cols;
-			const row = Math.floor(i / cols);
+		if (items.length === 0 || W <= 0 || H <= 0) {
+			return { items: results, totalHeight: Math.max(0, H) };
+		}
+
+		const weightOf = (item: LayoutItem): number => {
+			switch (weightBy) {
+				case "equal":
+					return 1;
+				case "aspect-ratio":
+					return item.aspectRatio;
+				case "random":
+					// Keyed by id so a tile's share survives reorders and count changes.
+					return 0.25 + seededRandom(item.id) * 1.75;
+			}
+		};
+
+		const weights = items.map(weightOf);
+		const totalWeight = weights.reduce((s, w) => s + w, 0);
+		const totalArea = W * H;
+
+		// Descending weight is what makes squarification work: the large cells are
+		// committed while whole rectangles are still free.
+		const cells: Cell[] = items
+			.map((item, i) => ({ id: item.id, area: (weights[i] / totalWeight) * totalArea }))
+			.sort((a, b) => b.area - a.area);
+
+		const full: Rect = { x: 0, y: 0, w: W, h: H };
+		const placed = squarify ? squarifyCells(cells, full) : sliceAndDice(cells, full, true);
+
+		// Subdivision tiles the container edge to edge, so this inset is the only
+		// thing separating neighbouring tiles. It is capped at what a cell can spare
+		// so a small tile shrinks toward 1px instead of inverting into its neighbour.
+		const inset = gap / 2;
+		for (const p of placed) {
+			const ix = Math.min(inset, Math.max(0, (p.w - 1) / 2));
+			const iy = Math.min(inset, Math.max(0, (p.h - 1) / 2));
 			results.push({
-				id: items[i].id,
-				x: Math.round(col * (cellW + gap)),
-				y: Math.round(row * (cellH + gap)),
-				width: Math.round(cellW),
-				height: Math.round(cellH),
+				id: p.id,
+				x: Math.round(p.x + ix),
+				y: Math.round(p.y + iy),
+				width: Math.max(1, Math.round(p.w - 2 * ix)),
+				height: Math.max(1, Math.round(p.h - 2 * iy)),
 			});
 		}
 
-		return { items: results, totalHeight: containerHeight };
+		return { items: results, totalHeight: H };
 	},
 });

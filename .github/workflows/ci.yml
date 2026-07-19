@@ -23,6 +23,7 @@ jobs:
           - { name: typecheck, cmd: "bun run check:types" }
           - { name: knip, cmd: "bunx knip" }
           - { name: spell, cmd: 'bunx cspell --no-progress --gitignore "**/*.{ts,js,svelte,md}"' }
+          - { name: test, cmd: "bunx vitest run" }
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2

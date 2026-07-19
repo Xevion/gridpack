@@ -21,6 +21,7 @@ export default defineConfig({
 				// `bun run` gives us a shell so `svelte-kit sync && svelte-check` works.
 				"type-check": "bun run check:types",
 				knip: "bunx knip",
+				test: "bunx vitest run",
 				spell: ["bunx", "cspell", "--no-progress", "--gitignore", "**/*.{ts,js,svelte,md}"],
 			},
 			// Fixers — referenced by autoFix, not run as standalone checks.

@@ -1,10 +1,17 @@
-import type { LayoutItem, ContainerDimensions, LayoutResult } from "./types";
+import type { LayoutItem, ContainerDimensions, PositionedItem, LayoutResult } from "./types";
 
-import { defineEngine, stubLayout } from "./types";
+import { defineEngine } from "./types";
 
 type SquareGridParams = {
 	cellSize: number;
 	cellAspectRatio: "1:1" | "4:3" | "3:2" | "16:9";
+};
+
+const CELL_RATIOS: Record<SquareGridParams["cellAspectRatio"], number> = {
+	"1:1": 1,
+	"4:3": 4 / 3,
+	"3:2": 3 / 2,
+	"16:9": 16 / 9,
 };
 
 /**
@@ -90,9 +97,35 @@ export const squareGridEngine = defineEngine<SquareGridParams>({
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: SquareGridParams,
+		params: SquareGridParams,
 		gap: number,
 	): LayoutResult {
-		return stubLayout(items, container.width, 200, gap);
+		const { cellSize, cellAspectRatio } = params;
+		const W = container.width;
+		const results: PositionedItem[] = [];
+
+		if (items.length === 0 || W <= 0) {
+			return { items: results, totalHeight: 0 };
+		}
+
+		// A cell never exceeds the container, so a viewport narrower than one cell
+		// degrades to a single full-width column instead of overflowing.
+		const cellW = Math.min(cellSize, W);
+		const cellH = cellW / CELL_RATIOS[cellAspectRatio];
+		const columns = Math.max(1, Math.floor((W + gap) / (cellW + gap)));
+		const offsetX = (W - (columns * cellW + (columns - 1) * gap)) / 2;
+
+		for (let i = 0; i < items.length; i++) {
+			results.push({
+				id: items[i].id,
+				x: Math.round(offsetX + (i % columns) * (cellW + gap)),
+				y: Math.round(Math.floor(i / columns) * (cellH + gap)),
+				width: Math.round(cellW),
+				height: Math.round(cellH),
+			});
+		}
+
+		const rows = Math.ceil(items.length / columns);
+		return { items: results, totalHeight: Math.max(0, Math.round(rows * (cellH + gap) - gap)) };
 	},
 });

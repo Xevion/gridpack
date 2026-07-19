@@ -1,6 +1,7 @@
 import type { LayoutItem, ContainerDimensions, LayoutResult } from "./types";
 
-import { defineEngine, stubLayout } from "./types";
+import { fittedRowHeight, renderRows } from "./row-layout";
+import { defineEngine } from "./types";
 
 type LinearPartitionParams = {
 	targetRowHeight: number;
@@ -106,9 +107,83 @@ export const linearPartitionEngine = defineEngine<LinearPartitionParams>({
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: LinearPartitionParams,
+		params: LinearPartitionParams,
 		gap: number,
 	): LayoutResult {
-		return stubLayout(items, container.width, 200, gap);
+		const { targetRowHeight, costFunction } = params;
+		const W = container.width;
+		const n = items.length;
+
+		if (n === 0 || W <= 0) return { items: [], totalHeight: 0 };
+
+		// Prefix sums make any row's aspect total an O(1) lookup, which is what keeps
+		// the O(n^2 * k) table affordable.
+		const prefix = new Array<number>(n + 1).fill(0);
+		for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + items[i].aspectRatio;
+
+		/** Cost of a row spanning items a..b inclusive. */
+		const rowCost = (a: number, b: number): number => {
+			const h = fittedRowHeight(prefix[b + 1] - prefix[a], b - a + 1, W, gap);
+			if (!Number.isFinite(h) || h <= 0) return Infinity;
+			const dev = h - targetRowHeight;
+			return costFunction === "variance" ? dev * dev : Math.abs(dev);
+		};
+
+		// Variance sums every row's penalty, so one bad row can be offset elsewhere.
+		// Max-deviation carries the single worst row forward, which instead makes the
+		// partition chase its outlier.
+		const combine = (a: number, b: number) =>
+			costFunction === "variance" ? a + b : Math.max(a, b);
+
+		/** Best partition of all items into exactly `k` rows, or null if none exists. */
+		function partition(k: number): { cost: number; rows: LayoutItem[][] } | null {
+			const dp: number[][] = Array.from({ length: k + 1 }, () =>
+				new Array<number>(n + 1).fill(Infinity),
+			);
+			const back: number[][] = Array.from({ length: k + 1 }, () =>
+				new Array<number>(n + 1).fill(-1),
+			);
+			dp[0][0] = 0;
+
+			for (let rows = 1; rows <= k; rows++) {
+				for (let i = rows; i <= n; i++) {
+					for (let j = rows - 1; j < i; j++) {
+						if (dp[rows - 1][j] === Infinity) continue;
+						const c = combine(dp[rows - 1][j], rowCost(j, i - 1));
+						if (c < dp[rows][i]) {
+							dp[rows][i] = c;
+							back[rows][i] = j;
+						}
+					}
+				}
+			}
+
+			if (dp[k][n] === Infinity) return null;
+
+			const rows: LayoutItem[][] = [];
+			let end = n;
+			for (let r = k; r > 0; r--) {
+				const start = back[r][end];
+				if (start < 0) return null;
+				rows.unshift(items.slice(start, end));
+				end = start;
+			}
+			return { cost: dp[k][n], rows };
+		}
+
+		// Seed the row count from how much width the images want at their target
+		// height, then let the neighbours compete: the ideal k is rarely off by more
+		// than one, and comparing their costs settles which side to land on.
+		const naturalWidth = prefix[n] * targetRowHeight + gap * (n - 1);
+		const seed = Math.max(1, Math.min(n, Math.round(naturalWidth / W)));
+
+		let best: { cost: number; rows: LayoutItem[][] } | null = null;
+		for (const k of [seed - 1, seed, seed + 1]) {
+			if (k < 1 || k > n) continue;
+			const candidate = partition(k);
+			if (candidate && (best === null || candidate.cost < best.cost)) best = candidate;
+		}
+
+		return renderRows(best ? best.rows : [items], W, gap);
 	},
 });

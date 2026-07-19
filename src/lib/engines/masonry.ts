@@ -1,6 +1,6 @@
-import type { LayoutItem, ContainerDimensions, LayoutResult } from "./types";
+import type { LayoutItem, ContainerDimensions, PositionedItem, LayoutResult } from "./types";
 
-import { defineEngine, stubLayout } from "./types";
+import { defineEngine } from "./types";
 
 type MasonryParams = {
 	columns: number;
@@ -95,9 +95,62 @@ export const masonryEngine = defineEngine<MasonryParams>({
 	layout(
 		items: LayoutItem[],
 		container: ContainerDimensions,
-		_params: MasonryParams,
+		params: MasonryParams,
 		gap: number,
 	): LayoutResult {
-		return stubLayout(items, container.width, 200, gap);
+		const { columns, assignment } = params;
+		const W = container.width;
+		const results: PositionedItem[] = [];
+
+		if (items.length === 0 || W <= 0) {
+			return { items: results, totalHeight: 0 };
+		}
+
+		const cols = Math.max(1, Math.min(Math.round(columns), items.length));
+		const colW = Math.max(1, (W - (cols - 1) * gap) / cols);
+		const heights = new Array<number>(cols).fill(0);
+		const assigned: number[][] = Array.from({ length: cols }, () => []);
+		const itemHeight = items.map((it) => colW / it.aspectRatio);
+
+		const shortest = () => heights.indexOf(Math.min(...heights));
+
+		if (assignment === "balanced") {
+			// Longest-processing-time first: placing the tallest images while the
+			// columns are still empty leaves the short ones to even out the tails,
+			// which lands a flatter bottom edge than a single in-order greedy pass.
+			const byHeight = items
+				.map((_, i) => i)
+				.sort((a, b) => itemHeight[b] - itemHeight[a] || a - b);
+			for (const i of byHeight) {
+				const c = shortest();
+				assigned[c].push(i);
+				heights[c] += itemHeight[i] + gap;
+			}
+			// Reading order is restored within each column; only the column choice
+			// was driven by height.
+			for (const col of assigned) col.sort((a, b) => a - b);
+		} else {
+			for (let i = 0; i < items.length; i++) {
+				const c = assignment === "round-robin" ? i % cols : shortest();
+				assigned[c].push(i);
+				heights[c] += itemHeight[i] + gap;
+			}
+		}
+
+		for (let c = 0; c < cols; c++) {
+			let y = 0;
+			for (const i of assigned[c]) {
+				results.push({
+					id: items[i].id,
+					x: Math.round(c * (colW + gap)),
+					y: Math.round(y),
+					width: Math.round(colW),
+					height: Math.max(1, Math.round(itemHeight[i])),
+				});
+				y += itemHeight[i] + gap;
+			}
+		}
+
+		return { items: results, totalHeight: Math.max(0, Math.max(...heights) - gap) };
 	},
 });
